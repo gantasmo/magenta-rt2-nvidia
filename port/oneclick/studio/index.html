@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>MRT2 Studio</title>
+<style>
+  :root{
+    --bg:#0a0b12; --panel:rgba(255,255,255,.04); --line:rgba(255,255,255,.10);
+    --txt:#e9ecff; --dim:#9aa0c0; --acc:#7c5cff; --acc2:#21d4fd; --good:#39d98a; --bad:#ff5d6c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%, #1a1740 0%, var(--bg) 55%) fixed;
+    color:var(--txt); font:15px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,Arial;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 60px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{font-weight:800;font-size:22px;letter-spacing:.5px}
+  .logo b{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pill{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);
+        border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--panel)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#888;box-shadow:0 0 10px #888}
+  .dot.ok{background:var(--good);box-shadow:0 0 12px var(--good)}
+  .dot.busy{background:var(--acc2);box-shadow:0 0 12px var(--acc2);animation:pulse 1s infinite}
+  .dot.err{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+  @keyframes pulse{50%{opacity:.35}}
+  button{font:inherit;color:var(--txt);cursor:pointer;border:1px solid var(--line);
+         background:var(--panel);border-radius:12px;padding:10px 16px;transition:.15s}
+  button:hover{border-color:var(--acc);background:rgba(124,92,255,.12)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .ghost{padding:7px 12px;font-size:13px;color:var(--dim)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;backdrop-filter:blur(8px)}
+  label{display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  textarea{width:100%;min-height:74px;resize:vertical;background:#0c0e1a;color:var(--txt);
+           border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit}
+  textarea:focus{outline:none;border-color:var(--acc)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{font-size:12.5px;color:var(--dim);border:1px dashed var(--line);border-radius:999px;padding:5px 11px;cursor:pointer}
+  .chip:hover{color:var(--txt);border-color:var(--acc)}
+  .knobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:6px}
+  .knob .row{display:flex;justify-content:space-between;align-items:baseline}
+  .knob .val{font-variant-numeric:tabular-nums;color:var(--acc2);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--acc);margin-top:2px}
+  .genrow{display:flex;gap:12px;align-items:center;margin-top:16px}
+  .gen{flex:1;font-size:16px;font-weight:700;padding:14px;border-radius:14px;
+       background:linear-gradient(90deg,var(--acc),#5a78ff);border:none}
+  .gen:hover{filter:brightness(1.08)}
+  canvas{width:100%;height:140px;display:block;border-radius:12px;background:#070815}
+  .np{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  audio{flex:1;min-width:220px;height:38px}
+  .meta{font-size:12.5px;color:var(--dim)}
+  .hist{display:flex;flex-direction:column;gap:8px}
+  .item{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+  .item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .s{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+  .item button{padding:6px 10px;font-size:13px;border-radius:9px}
+  .muted{color:var(--dim);font-size:13px}
+  /* overlay */
+  #ov{position:fixed;inset:0;background:rgba(6,7,16,.92);display:flex;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(6px)}
+  #ov .box{text-align:center;max-width:440px;padding:30px}
+  .spinner{width:54px;height:54px;border-radius:50%;margin:0 auto 18px;border:4px solid rgba(255,255,255,.12);border-top-color:var(--acc);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{color:var(--bad)}
+  a.dl{color:var(--acc2);text-decoration:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">MRT2 <b>Studio</b></div>
+    <div class="pill"><span id="dot" class="dot"></span><span id="stat">connecting…</span></div>
+    <button class="ghost" id="quit" title="Stop the engine">⏻ Quit</button>
+  </header>
+
+  <div class="card">
+    <label for="prompt">Describe the music you want</label>
+    <textarea id="prompt" placeholder="e.g. dreamy lo-fi hip hop with rain on a window and a mellow piano">upbeat disco funk with a fat bassline and bright horns</textarea>
+    <div class="chips" id="chips"></div>
+
+    <div class="knobs">
+      <div class="knob"><div class="row"><label>Length</label><span class="val" id="durV">30s</span></div>
+        <input type="range" id="dur" min="4" max="180" step="1" value="30"></div>
+      <div class="knob"><div class="row"><label>Temperature</label><span class="val" id="tempV">1.3</span></div>
+        <input type="range" id="temp" min="0.5" max="2.0" step="0.05" value="1.3"></div>
+      <div class="knob"><div class="row"><label>Top-k</label><span class="val" id="tkV">40</span></div>
+        <input type="range" id="tk" min="1" max="200" step="1" value="40"></div>
+      <div class="knob"><div class="row"><label>Style strength</label><span class="val" id="csV">3.0</span></div>
+        <input type="range" id="cs" min="0" max="7" step="0.1" value="3.0"></div>
+      <div class="knob"><div class="row"><label>Melody strength</label><span class="val" id="cnV">1.0</span></div>
+        <input type="range" id="cn" min="0" max="7" step="0.1" value="1.0"></div>
+    </div>
+
+    <div class="genrow">
+      <button class="gen" id="go">▶ Generate</button>
+      <span class="meta" id="genmeta"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <canvas id="viz" width="1024" height="140"></canvas>
+    <div class="np">
+      <audio id="player" controls></audio>
+      <a class="dl" id="dl" download>⤓ Download</a>
+    </div>
+    <div class="meta" id="nowmeta">Your generated music will appear here and play automatically.</div>
+  </div>
+
+  <div class="card">
+    <label>History</label>
+    <div class="hist" id="hist"><div class="muted">Nothing yet — hit Generate.</div></div>
+  </div>
+</div>
+
+<div id="ov"><div class="box">
+  <div class="spinner" id="sp"></div>
+  <div id="ovt" style="font-size:18px;font-weight:700">Waking up the musician…</div>
+  <div class="muted" id="ovs" style="margin-top:8px">Loading the model onto your GPU. First time takes ~30–60 seconds.</div>
+</div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const EXAMPLES = ["dreamy lo-fi hip hop with rain on a window","slow rainy jazz piano at midnight",
+  "epic synthwave for a space chase","warm analog pads, no drums, floating","driving techno with a deep rolling bass",
+  "sunny bossa nova with nylon guitar","cinematic orchestral build, triumphant","funky 70s clavinet groove"];
+const chips = $("#chips"); EXAMPLES.forEach(t=>{const c=document.createElement("span");c.className="chip";c.textContent=t;c.onclick=()=>{$("#prompt").value=t};chips.appendChild(c);});
+
+// slider readouts
+const bind=(id,vid,fmt)=>{const el=$(id),v=$(vid);const u=()=>v.textContent=fmt(el.value);el.oninput=u;u();};
+bind("#dur","#durV",x=>{x=+x;return x<60?x+"s":Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}); bind("#temp","#tempV",x=>(+x).toFixed(2));
+bind("#tk","#tkV",x=>x); bind("#cs","#csV",x=>(+x).toFixed(1)); bind("#cn","#cnV",x=>(+x).toFixed(1));
+
+// ---- health polling / overlay ----
+let ready=false;
+async function poll(){
+  try{
+    const r=await fetch("/health"); const h=await r.json();
+    $("#stat").textContent = h.ready ? ("ready · "+h.device.replace(/[<>]/g,"")) : h.status;
+    if(h.error){ $("#dot").className="dot err"; $("#ovt").innerHTML='<span class="err">Engine error</span>';
+      $("#ovs").textContent=h.error; $("#sp").style.display="none"; return; }
+    if(h.ready && !ready){ ready=true; $("#dot").className="dot ok"; $("#ov").style.display="none"; $("#go").disabled=false; }
+    if(!h.ready){ $("#ovs").textContent=h.status; }
+  }catch(e){ $("#stat").textContent="server offline"; $("#dot").className="dot err"; }
+}
+$("#go").disabled=true; poll(); setInterval(poll, ready?8000:2000);
+setInterval(()=>{ if(!ready) poll(); }, 2000);
+
+// ---- visualizer (WebAudio analyser on the <audio> element) ----
+const cvs=$("#viz"), cx=cvs.getContext("2d"); let actx,analyser,freq;
+function initViz(){
+  if(actx) return;
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  const src=actx.createMediaElementSource($("#player"));
+  analyser=actx.createAnalyser(); analyser.fftSize=512; freq=new Uint8Array(analyser.frequencyBinCount);
+  src.connect(analyser); analyser.connect(actx.destination);
+  draw();
+}
+function draw(){
+  requestAnimationFrame(draw);
+  const W=cvs.width,H=cvs.height; cx.clearRect(0,0,W,H);
+  if(!analyser){return;}
+  analyser.getByteFrequencyData(freq);
+  const n=80, step=Math.floor(freq.length/n); const bw=W/n;
+  for(let i=0;i<n;i++){
+    let v=freq[i*step]/255; const h=Math.pow(v,1.4)*H;
+    const g=cx.createLinearGradient(0,H,0,H-h);
+    g.addColorStop(0,"#21d4fd"); g.addColorStop(1,"#7c5cff");
+    cx.fillStyle=g; cx.fillRect(i*bw+1,H-h,bw-2,h);
+  }
+}
+
+// ---- history ----
+const hist=$("#hist"); let items=[];
+function addHistory(rec){
+  if(items.length===0) hist.innerHTML="";
+  items.unshift(rec);
+  const el=document.createElement("div"); el.className="item";
+  el.innerHTML=`<button title="Play">▶</button><div class="t">${rec.prompt}</div>
+    <span class="s">${rec.audio_s}s · ${rec.rtf}×</span><button class="d">⤓</button>`;
+  el.querySelector("button").onclick=()=>playRec(rec);
+  el.querySelector(".d").onclick=()=>{const a=document.createElement("a");a.href=rec.url;a.download=rec.file;a.click();};
+  hist.prepend(el);
+}
+function playRec(rec){
+  const p=$("#player"); p.src=rec.url; $("#dl").href=rec.url; $("#dl").download=rec.file;
+  $("#nowmeta").textContent=`“${rec.prompt}” — ${rec.audio_s}s, made in ${rec.gen_s}s (${rec.rtf}× real-time)`;
+  initViz(); if(actx&&actx.state==="suspended")actx.resume(); p.play().catch(()=>{});
+}
+
+// ---- generate ----
+let busy=false;
+$("#go").onclick=async()=>{
+  if(busy||!ready) return; busy=true;
+  $("#dot").className="dot busy"; $("#stat").textContent="generating…";
+  $("#go").disabled=true; $("#genmeta").textContent="composing on the GPU…";
+  const body={prompt:$("#prompt").value, duration:+$("#dur").value, temperature:+$("#temp").value,
+    top_k:+$("#tk").value, cfg_musiccoca:+$("#cs").value, cfg_notes:+$("#cn").value};
+  const t0=performance.now();
+  try{
+    const r=await fetch("/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!r.ok){ const e=await r.json().catch(()=>({error:r.statusText})); throw new Error(e.error||("HTTP "+r.status)); }
+    const gen_s=r.headers.get("X-Generate-Seconds")||((performance.now()-t0)/1000).toFixed(1);
+    const audio_s=r.headers.get("X-Audio-Seconds")||body.duration;
+    const rtf=r.headers.get("X-RTF")||"–";
+    const blob=await r.blob(); const url=URL.createObjectURL(blob);
+    const stamp=new Date().toLocaleTimeString();
+    const rec={prompt:body.prompt,url,file:`mrt2_${Date.now()}.wav`,gen_s:(+gen_s).toFixed(1),
+      audio_s:(+audio_s).toFixed(0),rtf:(+rtf).toFixed(1),stamp};
+    addHistory(rec); playRec(rec);
+    $("#genmeta").textContent=`done in ${rec.gen_s}s · ${rec.rtf}× real-time`;
+    $("#dot").className="dot ok"; $("#stat").textContent="ready";
+  }catch(e){
+    $("#genmeta").innerHTML=`<span style="color:var(--bad)">${e.message}</span>`;
+    $("#dot").className="dot err"; $("#stat").textContent="error";
+  }finally{ busy=false; $("#go").disabled=false; }
+};
+
+// ctrl/cmd+enter to generate
+$("#prompt").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter")$("#go").click();});
+
+// quit
+$("#quit").onclick=async()=>{ if(!confirm("Stop the MRT2 engine? The page will stop working until you launch it again."))return;
+  try{await fetch("/shutdown",{method:"POST"});}catch(e){} $("#ov").style.display="flex";
+  $("#ovt").textContent="Engine stopped."; $("#ovs").textContent="Double-click MRT2-Studio to start again."; $("#sp").style.display="none"; };
+</script>
+</body>
+</html>

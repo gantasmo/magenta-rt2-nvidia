@@ -1,0 +1,4 @@
+runpod
+magenta-rt
+jax[cuda12]
+numpy

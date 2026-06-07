@@ -1,0 +1,38 @@
+# ============================================================================
+#  SECURITY: never commit secrets. This file is the first line of defense.
+#  The RunPod API key and any other credentials live ONLY in secrets.local.json
+#  (and/or environment), which is ignored here and must NEVER be pushed to git.
+# ============================================================================
+secrets.local.json
+*.key
+*.pem
+.env
+.env.*
+runpod*.json
+!secrets.example.json
+!runpod.example.json
+
+# Python envs / caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+install.log
+
+# Model weights & generated audio (large / not source)
+models/
+checkpoints/
+resources/
+*.safetensors
+*.mlxfn
+*.wav
+*.flac
+
+# Node / build
+node_modules/
+build/
+dist/
+
+# OS noise
+.DS_Store
+Thumbs.db

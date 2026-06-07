@@ -1,0 +1,47 @@
+# ── Secrets ──
+secrets.local.json
+*.key
+.env
+.env.*
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+ENV/
+
+# ── Model weights & generated audio (large) ──
+*.safetensors
+*.ckpt
+*.wav
+*.flac
+*.mp3
+*.ogg
+output/
+
+# ── Logs ──
+*.log
+
+# ── Packaging / build output ──
+dist/
+build/
+
+# ── Editor / OS / tooling ──
+.vscode/
+.claude/
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# ── Internal-only docs (kept locally, not published) ──
+ASSESSMENT.md
+repomix-output.md
+
+# ── Original macOS app bundle (third-party binaries, ~384 MB) ──
+/MRT2 Bundle/
+
+# ── Upstream C++ source (carries its own git history) ──
+/port_src/
