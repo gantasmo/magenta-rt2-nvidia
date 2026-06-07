@@ -1,6 +1,9 @@
-# MRT2 Studio
+# magenta-rt2-nvidia
 
-A one-click app for generating music with Magenta RealTime 2 on an NVIDIA GPU.
+NVIDIA/CUDA port of Magenta RealTime 2 — a one-click local studio that runs `mrt2_small`
+on a WSL2 GPU via JAX and serves a browser UI for prompt-to-audio generation (48 kHz
+stereo, ~2× real-time). Includes WSL2 setup scripts and an optional RunPod serverless
+path for `mrt2_base`.
 
 ## Quick start (Windows)
 
