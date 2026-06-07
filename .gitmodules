@@ -1,0 +1,3 @@
+[submodule "port_src"]
+	path = port_src
+	url = https://github.com/magenta/magenta-realtime.git

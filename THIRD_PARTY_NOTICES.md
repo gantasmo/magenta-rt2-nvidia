@@ -9,9 +9,10 @@ Copyright Google LLC. Licensed under the Apache License, Version 2.0
 (<http://www.apache.org/licenses/LICENSE-2.0>).
 Project: <https://github.com/magenta/magenta-realtime>
 
-This repository installs and calls the `magenta-rt` package; it does not redistribute the
-package's source. If the upstream C++ engine source (`port_src/`) is added to this
-repository, those files retain their original Apache-2.0 license and per-file headers.
+This repository installs and calls the `magenta-rt` package. The upstream C++ engine
+source is included as a git submodule at `port_src/` (tracking
+`magenta/magenta-realtime`) and retains its original Apache-2.0 license and per-file
+headers.
 
 ## Magenta RealTime 2 model weights
 

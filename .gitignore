@@ -43,5 +43,4 @@ repomix-output.md
 # ── Original macOS app bundle (third-party binaries, ~384 MB) ──
 /MRT2 Bundle/
 
-# ── Upstream C++ source (carries its own git history) ──
-/port_src/
+# port_src/ is a git submodule (magenta/magenta-realtime) — tracked, not ignored.
