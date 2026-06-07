@@ -5,6 +5,8 @@ on a WSL2 GPU via JAX and serves a browser UI for prompt-to-audio generation (48
 stereo, ~2× real-time). Includes WSL2 setup scripts and an optional RunPod serverless
 path for `mrt2_base`.
 
+Made by **GANTASMO**.
+
 ## Quick start (Windows)
 
 1. Open `port/oneclick/` and double-click `MRT2-Studio.bat`.
