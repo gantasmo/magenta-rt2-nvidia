@@ -31,3 +31,8 @@ See [port/oneclick/START-HERE.md](port/oneclick/START-HERE.md) for the walkthrou
 ## Packaging
 
 Run `package.ps1` to build a distributable zip into `dist/MRT2-Studio.zip`.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Built on Magenta RealTime 2 (Apache-2.0, © Google LLC);
+see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and model-weight terms.
