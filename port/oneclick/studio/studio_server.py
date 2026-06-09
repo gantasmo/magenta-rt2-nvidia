@@ -19,22 +19,62 @@ os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 
 import io
 import json
+import socket
 import threading
 import time
 import traceback
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, "index.html")
-OUTDIR = os.path.join(HERE, "output")   # every generation is also saved here (visible on D:)
-PORT = int(os.environ.get("MRT2_PORT", "8777"))
+OUTDIR = os.path.join(HERE, "output")           # every generation is also saved here
+PORTFILE = os.path.join(HERE, ".studio_port")   # chosen port, for the launcher to read
+PREFERRED_PORT = int(os.environ.get("MRT2_PORT", "8777"))
 MODEL = os.environ.get("MRT2_MODEL", "mrt2_small")
 FPS = 25  # model emits 25 frames/s
+APP_ID = "mrt2-studio"  # marker in /health so we can recognise our own instances
 
 
 def _slug(text, n=40):
     keep = "".join(c if (c.isalnum() or c in " -_") else " " for c in (text or "")).strip()
     return ("_".join(keep.split()) or "track")[:n]
+
+
+def _health_of(port, timeout=0.4):
+    """Return the parsed /health dict of whatever is on this port, or None."""
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=timeout) as r:
+            return json.loads(r.read().decode("utf-8", "replace"))
+    except Exception:
+        return None
+
+
+def _port_free(port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind(("0.0.0.0", port))
+        return True
+    except OSError:
+        return False
+    finally:
+        s.close()
+
+
+def choose_port(preferred, span=40):
+    """Pick a usable port. Returns (port, already_running).
+
+    - If an MRT2 Studio is already serving a port, reuse it (don't double-load).
+    - If the preferred port is taken by something else, step to the next free one.
+    """
+    for cand in range(preferred, preferred + span):
+        h = _health_of(cand)
+        if h and h.get("app") == APP_ID:
+            return cand, True          # our own studio already here — reuse it
+        if h is None and _port_free(cand):
+            return cand, False         # free and nobody answering — take it
+        # else: occupied by a foreign process — try the next port
+    raise RuntimeError(f"no free port in range {preferred}..{preferred + span}")
 
 # ----------------------------------------------------------------------------- #
 #  Model holder (loaded once in a background thread; generation is serialized)
@@ -151,6 +191,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(500, f"index.html missing: {e}", "text/plain")
         elif path == "/health":
             self._json(200, {
+                "app": APP_ID,
                 "ready": ENGINE.ready, "status": ENGINE.status,
                 "error": ENGINE.error, "model": MODEL, "device": ENGINE.device,
             })
@@ -200,10 +241,31 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, "not found", "text/plain")
 
 
+def _write_portfile(port):
+    try:
+        with open(PORTFILE, "w") as f:
+            f.write(str(port))
+    except Exception as e:
+        print(f"[studio] could not write port file: {e}", flush=True)
+
+
 def main():
+    try:
+        port, already = choose_port(PREFERRED_PORT)
+    except Exception as e:
+        print(f"[studio] {e}", flush=True)
+        return
+    # Tell the launcher which port to open (always, even when reusing an instance).
+    _write_portfile(port)
+    if already:
+        print(f"[studio] MRT2 Studio is already running on port {port}; "
+              f"not starting a second engine.", flush=True)
+        return
+    if port != PREFERRED_PORT:
+        print(f"[studio] port {PREFERRED_PORT} was busy; using {port} instead.", flush=True)
     threading.Thread(target=ENGINE.load, daemon=True).start()
-    httpd = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    print(f"[studio] serving http://localhost:{PORT}  (model={MODEL})", flush=True)
+    httpd = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    print(f"[studio] serving http://localhost:{port}  (model={MODEL})", flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

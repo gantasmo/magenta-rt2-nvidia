@@ -38,7 +38,7 @@ Get-ChildItem -Path $stage -Recurse -Force -Directory |
 
 # Prune unwanted files.
 Get-ChildItem -Path $stage -Recurse -Force -File |
-  Where-Object { $_.Name -eq 'secrets.local.json' -or $_.Extension -in '.log','.wav','.flac','.mp3','.pyc' } |
+  Where-Object { $_.Name -in 'secrets.local.json','.studio_port' -or $_.Extension -in '.log','.wav','.flac','.mp3','.pyc' } |
   Remove-Item -Force -ErrorAction SilentlyContinue
 
 $zip = Join-Path $dist 'MRT2-Studio.zip'

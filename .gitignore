@@ -21,6 +21,7 @@ ENV/
 *.mp3
 *.ogg
 output/
+.studio_port
 
 # ── Logs ──
 *.log
@@ -32,6 +33,7 @@ build/
 # ── Editor / OS / tooling ──
 .vscode/
 .claude/
+.playwright-mcp/
 .DS_Store
 Thumbs.db
 __MACOSX/

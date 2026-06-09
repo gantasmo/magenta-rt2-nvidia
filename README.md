@@ -7,6 +7,8 @@ path for `mrt2_base`.
 
 Made by **GANTASMO**.
 
+![MRT2 Studio — type a prompt, press Generate, and an original track plays](docs/studio.png)
+
 ## ⬇️ Get started (easiest — no terminal)
 
 1. **[Download the latest release ZIP](../../releases/latest)** (`MRT2-Studio.zip`).
@@ -17,6 +19,8 @@ Made by **GANTASMO**.
 4. When it finishes, the Studio opens in your browser. Type a vibe, press **Generate**.
 
 After the first time, just double-click **`oneclick\studio\MRT2-Studio.vbs`**.
+
+![A generated track playing with the live audio-reactive visualizer and history](docs/studio-playing.png)
 
 **Requirements:** Windows 10/11 and an NVIDIA GPU. Full walkthrough, including how to add
 "WSL" if you don't have it yet: **[INSTALL.md](INSTALL.md)**.

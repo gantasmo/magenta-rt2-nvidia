@@ -1,0 +1,21 @@
+# Default: let git normalize text files on commit.
+* text=auto
+
+# Shell scripts MUST stay LF — they run inside WSL2/Linux and break with CRLF.
+*.sh text eol=lf
+
+# Windows scripts stay CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.vbs text eol=crlf
+
+# Don't touch binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.mp4 binary
+*.webm binary
+*.wav binary
+*.safetensors binary
