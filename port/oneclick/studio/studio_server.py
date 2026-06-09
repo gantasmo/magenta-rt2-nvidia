@@ -88,6 +88,7 @@ class Engine:
         self.device = "?"
         self.lock = threading.Lock()      # serialize generate() (model not reentrant)
         self._embed_cache = {}
+        self._gen = None                  # current evolving piece: {state, emb, prompt, samples, sr}
 
     def load(self):
         try:
@@ -120,26 +121,41 @@ class Engine:
             self._embed_cache[prompt] = emb
         return emb
 
-    def generate_wav(self, prompt, duration, temperature, top_k,
-                     cfg_musiccoca, cfg_notes):
+    def generate_wav(self, prompt, duration, temperature, top_k, cfg_musiccoca,
+                     cfg_notes, cfg_drums=1.0, drums=-1, extend=False):
+        """Generate audio. extend=True continues the current piece via the model's
+        streaming state (changing the prompt morphs it without a hard cut)."""
         import numpy as np
         import soundfile as sf
         frames = max(1, int(round(float(duration) * FPS)))
         with self.lock:
             t0 = time.time()
-            emb = self.embed(prompt)
-            wav, _ = self.mrt.generate(
-                style=emb, frames=frames,
+            prev = self._gen if extend else None
+            if prev is not None and prev.get("prompt") == prompt:
+                emb = prev["emb"]                 # same vibe — keep the embedding
+            else:
+                emb = self.embed(prompt)          # new/changed vibe — (re)embed
+            state = prev["state"] if prev is not None else None
+            wav, new_state = self.mrt.generate(
+                style=emb, frames=frames, state=state,
                 temperature=float(temperature), top_k=int(top_k),
                 cfg_musiccoca=float(cfg_musiccoca), cfg_notes=float(cfg_notes),
+                cfg_drums=float(cfg_drums), drums=[int(drums)],
             )
             compute = time.time() - t0
-        samples = np.asarray(wav.samples, dtype=np.float32)   # [N, 2] in [-1, 1]
-        sr = int(getattr(wav, "sample_rate", 48000))
+            seg = np.asarray(wav.samples, dtype=np.float32)   # [N, 2] in [-1, 1]
+            sr = int(getattr(wav, "sample_rate", 48000))
+            if prev is not None and prev.get("samples") is not None:
+                full = np.concatenate([prev["samples"], seg], axis=0)
+            else:
+                full = seg
+            self._gen = {"state": new_state, "emb": emb, "prompt": prompt,
+                         "samples": full, "sr": sr}
         buf = io.BytesIO()
-        sf.write(buf, samples, sr, format="WAV", subtype="PCM_16")
+        sf.write(buf, full, sr, format="WAV", subtype="PCM_16")   # always the full piece
         wav_bytes = buf.getvalue()
-        audio_s = samples.shape[0] / sr
+        audio_s = full.shape[0] / sr
+        seg_s = seg.shape[0] / sr
         # Persist a real file alongside the GUI so the user keeps every track.
         fname = f"{int(t0)}_{_slug(prompt)}.wav"
         try:
@@ -149,7 +165,7 @@ class Engine:
         except Exception as e:
             print(f"[studio] WARN could not save {fname}: {e}", flush=True)
             fname = ""
-        return wav_bytes, compute, audio_s, sr, fname
+        return wav_bytes, compute, audio_s, sr, fname, seg_s
 
 
 ENGINE = Engine()
@@ -208,7 +224,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"ok": True, "msg": "shutting down"})
             threading.Thread(target=lambda: (time.sleep(0.3), os._exit(0)), daemon=True).start()
             return
-        if path == "/generate":
+        if path in ("/generate", "/extend"):
             if not ENGINE.ready:
                 self._json(503, {"error": "engine not ready", "status": ENGINE.status})
                 return
@@ -218,18 +234,22 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(400, {"error": f"bad json: {e}"})
                 return
             try:
-                wav_bytes, compute, audio_s, sr, fname = ENGINE.generate_wav(
+                wav_bytes, compute, audio_s, sr, fname, seg_s = ENGINE.generate_wav(
                     prompt=str(p.get("prompt") or "warm analog pads").strip(),
                     duration=p.get("duration", 10),
                     temperature=p.get("temperature", 1.3),
                     top_k=p.get("top_k", 40),
                     cfg_musiccoca=p.get("cfg_musiccoca", 3.0),
                     cfg_notes=p.get("cfg_notes", 1.0),
+                    cfg_drums=p.get("cfg_drums", 1.0),
+                    drums=p.get("drums", -1),
+                    extend=(path == "/extend"),
                 )
-                rtf = (audio_s / compute) if compute > 0 else 0.0
+                rtf = (seg_s / compute) if compute > 0 else 0.0
                 self._send(200, wav_bytes, "audio/wav", extra={
                     "X-Generate-Seconds": f"{compute:.2f}",
                     "X-Audio-Seconds": f"{audio_s:.2f}",
+                    "X-Segment-Seconds": f"{seg_s:.2f}",
                     "X-RTF": f"{rtf:.2f}",
                     "X-Sample-Rate": str(sr),
                     "X-Filename": fname,
