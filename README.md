@@ -26,8 +26,8 @@ After the first time, just double-click **`oneclick\studio\MRT2-Studio.vbs`**.
 - **Extend / morph** — continue the current piece seamlessly; change the prompt first and it morphs into a new vibe without a hard cut.
 - **Drums** — Auto / On / Off, with a separate drum-strength control.
 - **Live visualizer** — Bars, Wave, or Radial, reacting to the audio in real time.
-- **Player tools** — master volume, loop, per-track download, and a history you can rename, reuse, re-download, or clear.
-- **Any screen** — clean responsive layout for desktop and mobile.
+- **Player tools** — master volume, loop, per-track download, and a history (kept across reloads) you can rename, reuse, re-download, or clear.
+- **Any screen** — a compact, collapsible layout that fits one phone screen and expands on desktop.
 
 Every track is also saved to `oneclick\studio\output\`.
 
