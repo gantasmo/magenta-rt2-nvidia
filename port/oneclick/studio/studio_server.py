@@ -17,6 +17,8 @@ os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 os.environ.setdefault("XLA_PYTHON_CLIENT_ALLOCATOR", "platform")
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 
+import base64
+import hashlib
 import io
 import json
 import socket
@@ -112,36 +114,81 @@ class Engine:
             self.status = "error: " + self.error
             traceback.print_exc()
 
-    def embed(self, prompt):
-        emb = self._embed_cache.get(prompt)
+    def _style_key(self, sources, seed):
+        basis = [(s.get("type", "text"), (s.get("text") or "").strip(),
+                  (s.get("audio_b64") or "")[:48], round(float(s.get("weight", 1.0)), 4))
+                 for s in sources]
+        return hashlib.sha1((repr(basis) + f"|seed={seed}").encode()).hexdigest()
+
+    def _embed_one(self, src, seed):
+        """Embed one style source: a text prompt OR an uploaded audio clip."""
+        if src.get("type") == "audio" and src.get("audio_b64"):
+            from magenta_rt.audio import Waveform
+            raw = base64.b64decode(src["audio_b64"])
+            wf = Waveform.from_file(io.BytesIO(raw))
+            return self.mrt.embed_style(wf, use_mapper=True, seed=int(seed))
+        text = (src.get("text") or "warm analog pads").strip()
+        return self.mrt.embed_style(text, use_mapper=True, seed=int(seed))
+
+    def build_style(self, prompt, styles, seed):
+        """One style embedding from a prompt, or a weighted blend of text/audio
+        sources (overrides prompt). Returns (embedding, cache_key, label)."""
+        import numpy as np
+        sources = list(styles) if styles else [{"type": "text", "text": prompt, "weight": 1.0}]
+        key = self._style_key(sources, seed)
+        emb = self._embed_cache.get(key)
         if emb is None:
-            emb = self.mrt.embed_style(prompt, use_mapper=True)
+            embs, weights = [], []
+            for s in sources:
+                embs.append(np.asarray(self._embed_one(s, seed), dtype=np.float32))
+                weights.append(max(0.0, float(s.get("weight", 1.0))))
+            w = np.asarray(weights, dtype=np.float32)
+            if w.sum() <= 0:
+                w = np.ones_like(w)
+            emb = np.average(np.stack(embs, axis=0), axis=0, weights=w).astype(np.float32)
             if len(self._embed_cache) > 32:
                 self._embed_cache.clear()
-            self._embed_cache[prompt] = emb
-        return emb
+            self._embed_cache[key] = emb
+        label = " + ".join((s.get("text") or "audio clip") for s in sources)[:60]
+        return emb, key, label
 
     def generate_wav(self, prompt, duration, temperature, top_k, cfg_musiccoca,
-                     cfg_notes, cfg_drums=1.0, drums=-1, extend=False):
+                     cfg_notes, cfg_drums=1.0, drums=-1, extend=False,
+                     styles=None, notes=None, seed=0):
         """Generate audio. extend=True continues the current piece via the model's
-        streaming state (changing the prompt morphs it without a hard cut)."""
+        streaming state (changing the prompt/style morphs it without a hard cut).
+          styles: weighted blend of text/audio sources (overrides prompt)
+          notes:  optional MIDI note numbers to steer the melody
+          seed:   makes the style embedding reproducible"""
         import numpy as np
         import soundfile as sf
         frames = max(1, int(round(float(duration) * FPS)))
         with self.lock:
             t0 = time.time()
             prev = self._gen if extend else None
-            if prev is not None and prev.get("prompt") == prompt:
+            emb, key, label = self.build_style(prompt, styles, int(seed or 0))
+            if prev is not None and prev.get("key") == key:
                 emb = prev["emb"]                 # same vibe, keep the embedding
-            else:
-                emb = self.embed(prompt)          # new/changed vibe, (re)embed
             state = prev["state"] if prev is not None else None
-            wav, new_state = self.mrt.generate(
-                style=emb, frames=frames, state=state,
-                temperature=float(temperature), top_k=int(top_k),
-                cfg_musiccoca=float(cfg_musiccoca), cfg_notes=float(cfg_notes),
-                cfg_drums=float(cfg_drums), drums=[int(drums)],
-            )
+            gkw = dict(style=emb, frames=frames, state=state,
+                       temperature=float(temperature), top_k=int(top_k),
+                       cfg_musiccoca=float(cfg_musiccoca), cfg_notes=float(cfg_notes),
+                       cfg_drums=float(cfg_drums), drums=[int(drums)])
+            if notes:
+                # Confirmed from magenta_rt jax/system.py generate() docstring:
+                # notes is 128 ints (one per MIDI pitch 0-127). Per-slot state:
+                #   -1 masked/unconstrained, 0 off, 1 on (sustain), 2 onset,
+                #   3 on (model free to play as onset or continuation).
+                nn = [int(n) for n in notes]
+                if len(nn) == 128:
+                    gkw["notes"] = nn                  # caller supplied the full 128-vector
+                else:
+                    vec = [-1] * 128                   # default: every pitch unconstrained
+                    for n in nn:
+                        if 0 <= n < 128:
+                            vec[n] = 3                 # 3 = play this pitch (model's freedom)
+                    gkw["notes"] = vec
+            wav, new_state = self.mrt.generate(**gkw)
             compute = time.time() - t0
             seg = np.asarray(wav.samples, dtype=np.float32)   # [N, 2] in [-1, 1]
             sr = int(getattr(wav, "sample_rate", 48000))
@@ -149,7 +196,7 @@ class Engine:
                 full = np.concatenate([prev["samples"], seg], axis=0)
             else:
                 full = seg
-            self._gen = {"state": new_state, "emb": emb, "prompt": prompt,
+            self._gen = {"state": new_state, "emb": emb, "key": key, "label": label,
                          "samples": full, "sr": sr}
         buf = io.BytesIO()
         sf.write(buf, full, sr, format="WAV", subtype="PCM_16")   # always the full piece
@@ -157,7 +204,7 @@ class Engine:
         audio_s = full.shape[0] / sr
         seg_s = seg.shape[0] / sr
         # Persist a real file alongside the GUI so the user keeps every track.
-        fname = f"{int(t0)}_{_slug(prompt)}.wav"
+        fname = f"{int(t0)}_{_slug(label)}.wav"
         try:
             os.makedirs(OUTDIR, exist_ok=True)
             with open(os.path.join(OUTDIR, fname), "wb") as f:
@@ -268,6 +315,9 @@ class Handler(BaseHTTPRequestHandler):
                     cfg_drums=p.get("cfg_drums", 1.0),
                     drums=p.get("drums", -1),
                     extend=(path == "/extend"),
+                    styles=p.get("styles"),
+                    notes=p.get("notes"),
+                    seed=p.get("seed", 0),
                 )
                 rtf = (seg_s / compute) if compute > 0 else 0.0
                 self._send(200, wav_bytes, "audio/wav", extra={
