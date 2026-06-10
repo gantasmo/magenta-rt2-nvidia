@@ -63,7 +63,7 @@ exactly the op we patch or CPU-fallback in Layer 2 (see Risks).
 
 ### On RunPod
 1. Launch a pod with a **CUDA 12.x *devel*** template (needs `nvcc`), any NVIDIA GPU.
-2. Upload this `port/` folder (or `git clone` your fork containing it).
+2. Upload this `engine/` folder (or `git clone` your fork containing it).
 3. Build:
    ```bash
    export CMAKE_CUDA_ARCHITECTURES=90      # H100=90, A100=80, 4090=89, 5090=120
@@ -84,8 +84,8 @@ python scripts/compare_python_n_cpp.py     # compares Python ref vs C++ engine o
 
 ## Layer 3: the product (interactive, browser-based)
 
-Built and ready in [`server/`](server/): a **backend-agnostic streaming server** +
-a dependency-free **browser client**. It wraps the official `magenta_rt`
+Built and ready in [`../cloud/server/`](../cloud/server/): a **backend-agnostic streaming
+server** + a dependency-free **browser client**. It wraps the official `magenta_rt`
 streaming system (`MagentaRT2Jax.generate(style, frames, state)` → gapless 48 kHz
 chunks) and pushes audio to the browser over WebSocket, with live prompt + param
 control. Runs on the **JAX backend today** (Layer 0, works on any NVIDIA pod);
@@ -96,10 +96,10 @@ the protocol and client are unchanged when you later swap in the native C++ engi
 uv pip install "magenta-rt" "jax[cuda13]" websockets numpy
 mrt models init                       # MusicCoCa + SpectroStream resources
 mrt checkpoints download mrt2_small   # JAX needs the *safetensors* checkpoints
-python server/mrt2_server.py --model mrt2_small --host 0.0.0.0 --port 8765
+python ../cloud/server/mrt2_server.py --model mrt2_small --host 0.0.0.0 --port 8765
 ```
 
-Then open [`server/client.html`](server/client.html) in a browser, set the
+Then open [`../cloud/server/client.html`](../cloud/server/client.html) in a browser, set the
 `ws://` URL (on RunPod use the pod's public address + exposed TCP port), hit
 **Connect → Start**, and type prompts live. The client schedules chunks gaplessly
 via Web Audio and shows the real-time factor.
@@ -137,5 +137,5 @@ via Web Audio and shows the real-time factor.
 - `build_cuda.sh`: clone → patch → configure → build `hello_mrt2`
 - `run_demo.sh`: download weights → generate a `.wav`, prints an RTF (real-time factor) check
 - `Dockerfile`: reproducible RunPod / local CUDA build environment
-- `server/mrt2_server.py`: streaming WebSocket server (JAX backend now, C++ engine later)
-- `server/client.html`: dependency-free browser client (gapless Web Audio + live controls)
+- `../cloud/server/mrt2_server.py`: streaming WebSocket server (JAX backend now, C++ engine later)
+- `../cloud/server/client.html`: dependency-free browser client (gapless Web Audio + live controls)

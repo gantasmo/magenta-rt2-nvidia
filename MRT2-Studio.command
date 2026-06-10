@@ -1,6 +1,6 @@
 #!/bin/bash
-# macOS / Linux one-click entry. Double-click (may need: chmod +x MRT2-Studio.command).
-cd "$(dirname "$0")"
+# macOS / Linux one-click entry (RunPod cloud GUI). Double-click (may need: chmod +x MRT2-Studio.command).
+cd "$(dirname "$0")/cloud"
 PY="$(command -v python3 || command -v python)"
 if [ -z "$PY" ]; then
   echo "Python 3 is required. Opening download page…"

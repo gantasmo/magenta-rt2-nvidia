@@ -41,8 +41,8 @@ function Find-Rel([string[]]$rels){
   foreach($r in $rels){ $p = Join-Path $root $r; if(Test-Path $p){ return (Resolve-Path $p).Path } }
   return $null
 }
-$setupSh   = Find-Rel @('port\wsl\setup_all.sh','wsl\setup_all.sh')
-$studioVbs = Find-Rel @('port\oneclick\studio\MRT2-Studio.vbs','oneclick\studio\MRT2-Studio.vbs')
+$setupSh   = Find-Rel @('setup_all.sh','wsl\setup_all.sh','port\wsl\setup_all.sh')
+$studioVbs = Find-Rel @('..\app\MRT2-Studio.vbs','app\MRT2-Studio.vbs','oneclick\studio\MRT2-Studio.vbs','port\oneclick\studio\MRT2-Studio.vbs')
 
 function To-Wsl([string]$winPath){
   $d = $winPath.Substring(0,1).ToLower()
@@ -122,7 +122,7 @@ Clear-Host
 Write-Host ""
 Write-Host "  MRT2 STUDIO - SETUP" -ForegroundColor Magenta
 Write-Host "  Make music from a text prompt on your own GPU." -ForegroundColor Gray
-if($setupSh)  { } else { BAD "Could not find wsl\setup_all.sh next to this installer."; Done 1 }
+if($setupSh)  { } else { BAD "Could not find install\setup_all.sh next to this installer."; Done 1 }
 
 # =========================================================================== #
 #  PHASE 1 - SYSTEM CHECK (read-only, nothing is installed yet)
@@ -287,7 +287,7 @@ Head "Setup complete"
 OK "Music engine + model installed and verified on your GPU."
 if(Ask "Launch MRT2 Studio now?"){
   if($studioVbs){ Start-Process wscript.exe "`"$studioVbs`""; Info "Your browser will open at http://localhost:8777 in a moment." }
-  else{ WARN "Could not find the Studio launcher; open oneclick\studio\MRT2-Studio.vbs manually." }
+  else{ WARN "Could not find the Studio launcher; open app\MRT2-Studio.vbs manually." }
 }
-Info "From now on, just double-click MRT2-Studio (in oneclick) to make music."
+Info "From now on, just double-click MRT2-Studio.bat in the main folder to make music."
 Done 0

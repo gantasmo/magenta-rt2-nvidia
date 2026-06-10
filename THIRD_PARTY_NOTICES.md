@@ -19,3 +19,8 @@ headers.
 The model checkpoints (for example `mrt2_small.safetensors`) are downloaded at runtime
 from HuggingFace and are subject to the model publisher's own license terms. They are not
 included in this repository.
+
+## VFX-JS (`@vfx-js/core`)
+
+Licensed under the MIT License. Vendored at `cloud/ui/vendor/vfx-js.js` for the
+audio-reactive visualizer in the optional RunPod/cloud launcher.

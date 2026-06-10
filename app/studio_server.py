@@ -276,7 +276,7 @@ class Handler(BaseHTTPRequestHandler):
             })
         elif path == "/favicon.svg":
             try:
-                with open(os.path.join(HERE, os.pardir, "favicon.svg"), "rb") as f:
+                with open(os.path.join(HERE, "favicon.svg"), "rb") as f:
                     self._send(200, f.read(), "image/svg+xml")
             except Exception:
                 self._send(404, "no favicon", "text/plain")

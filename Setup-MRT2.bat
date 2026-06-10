@@ -5,4 +5,4 @@ rem  It checks your PC, shows what it needs, asks before downloading anything,
 rem  and fixes common problems automatically.
 rem ===========================================================================
 title MRT2 Studio Setup
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1" %*
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0install\setup.ps1" %*

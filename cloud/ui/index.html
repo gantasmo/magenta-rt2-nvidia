@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MRT2 Studio</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<style>
+  :root{--bg:#0c0d10;--fg:#fff;--muted:#9aa0a6;--raised:#1a1c20;--line:#2a2d33;
+        --accent:#1E70E6;--ok:#34a853;--warn:#fbbc04;--bad:#ea4335;--mag:#c34bff;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+    font-family:system-ui,'Segoe UI',sans-serif;overflow:hidden;}
+  #bg{position:fixed;inset:0;z-index:0;border:0;width:100%;height:100%;pointer-events:none;}
+  #app{position:relative;z-index:1;height:100%;overflow-y:auto;
+    display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px;}
+  .wrap{width:min(760px,94vw);}
+  h1{font-size:22px;letter-spacing:2px;text-transform:uppercase;margin:0;}
+  h1 .g{color:var(--mag);} .tag{color:var(--muted);font-size:13px;margin:4px 0 22px;}
+  .card{background:rgba(20,22,26,.78);backdrop-filter:blur(8px);border:1px solid var(--line);
+    border-radius:14px;padding:18px 18px;margin:12px 0;}
+  .card h2{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);
+    margin:0 0 12px;font-weight:600;}
+  .kv{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);}
+  .kv b{color:var(--fg);font-weight:600;}
+  .models{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
+  .model{display:flex;align-items:center;gap:12px;background:var(--raised);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .badge{font-size:11px;font-weight:700;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .b-yes{background:rgba(52,168,83,.18);color:#7ee2a0;}
+  .b-tight{background:rgba(251,188,4,.18);color:#ffd968;}
+  .b-no{background:rgba(234,67,53,.18);color:#ff9b91;}
+  .model .name{font-weight:600;font-size:14px;min-width:96px;}
+  .model .how{font-size:12px;color:var(--muted);flex:1;}
+  .offload{font-size:11px;color:#8ab4f8;margin-top:3px;}
+  .rec{margin-top:12px;font-size:13px;color:#cfe0ff;background:rgba(30,112,230,.10);
+    border:1px solid rgba(30,112,230,.3);border-radius:10px;padding:10px 12px;}
+  .tabs{display:flex;gap:8px;margin:6px 0 2px;}
+  .tab{flex:1;text-align:center;padding:10px;border-radius:10px;background:var(--raised);
+    border:1px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);}
+  .tab.active{color:#fff;border-color:var(--accent);background:rgba(30,112,230,.14);}
+  label,.flbl{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
+  input[type=text],input[type=password],select{width:100%;background:var(--raised);
+    border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:10px 12px;font-size:14px;}
+  .row{display:flex;gap:10px;} .row>*{flex:1;}
+  .sliders{display:grid;grid-template-columns:120px 1fr 46px;gap:6px 12px;align-items:center;margin-top:8px;}
+  .sliders label{margin:0;} .val{font-variant-numeric:tabular-nums;text-align:right;font-size:13px;}
+  input[type=range]{width:100%;}
+  button{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:11px 16px;
+    font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;}
+  button.ghost{background:var(--raised);border:1px solid var(--line);}
+  button:disabled{opacity:.45;cursor:default;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;}
+  .status{font-size:12px;color:var(--muted);margin-top:10px;min-height:16px;font-variant-numeric:tabular-nums;}
+  pre{background:#000;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:11px;
+    max-height:140px;overflow:auto;color:#9fe6b0;white-space:pre-wrap;display:none;}
+  .secure{font-size:11px;color:#7ee2a0;margin-top:6px;}
+  audio{width:100%;margin-top:14px;display:none;}
+  .gpu-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px;}
+  .gpu{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;transition:.15s;}
+  .gpu:hover{border-color:#3a6f4a;}
+  .gpu.sel{border-color:var(--accent);background:rgba(30,112,230,.14);}
+  .gpu.rec{box-shadow:inset 0 0 0 1px rgba(195,75,255,.3);}
+  .gpu-h{font-weight:700;font-size:13px;} .gpu-m{font-size:12px;color:#7ee2a0;margin:3px 0;}
+  .gpu-b{font-size:11px;color:var(--muted);line-height:1.3;}
+  @media(max-width:560px){.gpu-tiers{grid-template-columns:1fr;}}
+  .vizbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .vizbar select{flex:0 1 210px;}
+  .vizbar button{margin:0;padding:8px 12px;}
+  .vizlbl{font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+<iframe id="bg" src="vfx.html" title="audio-reactive visualizer" scrolling="no"></iframe>
+<div id="app"><div class="wrap">
+  <h1>MRT2 <span class="g">Studio</span></h1>
+  <div class="tag">Magenta RealTime 2: local on NVIDIA, or pay-per-use on RunPod serverless.</div>
+
+  <div class="vizbar">
+    <span class="vizlbl" id="vizlbl">Visualizer</span>
+    <select id="viz" aria-labelledby="vizlbl">
+      <option value="ghost">Liquid Glass Ghost</option>
+      <option value="ferro">Ferrofluid Spike</option>
+      <option value="cymatic">Cymatic Ring</option>
+      <option value="pretzel">Ferro Pretzel</option>
+    </select>
+    <span style="flex:1"></span>
+    <button class="ghost" id="saveBtn">⤓ Save last 30s</button>
+  </div>
+
+  <div class="card" id="sysCard">
+    <h2>This machine</h2>
+    <div class="kv" id="sysKv">probing…</div>
+    <div class="models" id="models"></div>
+    <div class="rec" id="rec" style="display:none"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="runpod">☁ RunPod (serverless)</div>
+    <div class="tab" data-tab="local">🖥 Local GPU</div>
+  </div>
+
+  <!-- RUNPOD -->
+  <div class="card" id="panel-runpod">
+    <h2>RunPod: pay only while generating</h2>
+    <label for="apiKey">API key <span id="keyState" style="color:#7ee2a0"></span></label>
+    <input type="password" id="apiKey" placeholder="paste RunPod API key (stored locally, never committed)" />
+    <div class="secure">🔒 Saved only to <b>secrets.local.json</b> (gitignored). Never sent to git or logged.</div>
+    <div class="row">
+      <div><label for="endpointId">Endpoint ID</label><input type="text" id="endpointId" placeholder="existing endpoint id (or deploy below)"></div>
+      <div><label for="dockerImage">Docker image</label><input type="text" id="dockerImage" placeholder="user/mrt2-serverless:latest"></div>
+    </div>
+    <button class="ghost" id="saveKey">Save credentials</button>
+    <div class="flbl" style="margin-top:14px">Pick a GPU <span id="gpuModelTag" style="color:var(--muted)"></span></div>
+    <div id="gpuTiers" class="gpu-tiers">loading options…</div>
+    <button class="ghost" id="deploy">Deploy serverless endpoint ▸</button>
+    <div class="hint">Deploy needs the <b>serverless/</b> image built &amp; pushed once (a one-time dev step). Scales to zero when idle. You pay per second of inference.</div>
+    <div class="status" id="rpStatus"></div>
+  </div>
+
+  <!-- LOCAL -->
+  <div class="card" id="panel-local" style="display:none">
+    <h2>Local GPU: install once, run free</h2>
+    <div class="hint">Installs an isolated Python env with <b>magenta-rt</b> + CUDA JAX. One click; a few minutes. The native real-time C++ engine is a separate advanced build (see port/README).</div>
+    <button id="install">Install local engine</button>
+    <div class="status" id="instStatus"></div>
+    <pre id="instLog"></pre>
+  </div>
+
+  <!-- GENERATE (shared) -->
+  <div class="card">
+    <h2 id="genTitle">Generate</h2>
+    <label for="prompt">Prompt</label>
+    <input type="text" id="prompt" value="warm analog pads with a deep sub bass" />
+    <div class="row">
+      <div><label for="model">Model</label><select id="model"><option value="mrt2_small">mrt2_small</option><option value="mrt2_base">mrt2_base</option></select></div>
+      <div><label for="duration">Duration (s)</label><input type="text" id="duration" value="8"></div>
+    </div>
+    <div class="sliders">
+      <label for="temperature">Temperature</label><input type="range" id="temperature" min="0.5" max="2" step="0.05" value="1.3"><div class="val" id="temperature_v">1.30</div>
+      <label for="top_k">Top-k</label><input type="range" id="top_k" min="1" max="256" step="1" value="40"><div class="val" id="top_k_v">40</div>
+      <label for="cfg_musiccoca">CFG style</label><input type="range" id="cfg_musiccoca" min="0" max="7" step="0.1" value="3"><div class="val" id="cfg_musiccoca_v">3.0</div>
+      <label for="cfg_notes">CFG notes</label><input type="range" id="cfg_notes" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_notes_v">1.0</div>
+      <label for="cfg_drums">CFG drums</label><input type="range" id="cfg_drums" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_drums_v">1.0</div>
+      <label for="drumsMode">Drums</label><select id="drumsMode" style="grid-column:span 2"><option value="-1">Auto</option><option value="1">On</option><option value="0">Off</option></select>
+    </div>
+    <div class="sliders" style="grid-template-columns:120px 1fr 46px;margin-top:10px">
+      <label for="volume">Master volume</label><input type="range" id="volume" min="0" max="1" step="0.01" value="0.9"><div class="val" id="volume_v">90</div>
+    </div>
+    <button id="actionBtn">▶ Generate</button>
+    <button class="ghost" id="newBtn" style="display:none">↻ New</button>
+    <button class="ghost" id="stopBtn" style="display:none">■ Stop</button>
+    <div class="status" id="genStatus"></div>
+    <audio id="player" controls></audio>
+  </div>
+</div></div>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+let busy=false;
+
+/* ---------- audio-reactive visualizer bridge (vfx.html iframe) ---------- */
+const vfxFrame=$("bg");
+function vizAudio(o){ if(vfxFrame&&vfxFrame.contentWindow) vfxFrame.contentWindow.postMessage({type:'AUDIO',...o},'*'); }
+
+/* ---------- helpers ---------- */
+const api=async(u,o)=>{const r=await fetch(u,o);return r.json();};
+const badge=t=>t==='yes'?'<span class="badge b-yes">runs here</span>':
+  t==='tight'?'<span class="badge b-tight">tight</span>':'<span class="badge b-no">use RunPod</span>';
+
+/* ---------- system probe ---------- */
+(async()=>{
+  const p=await api('/api/probe');
+  const pl=p.platform, g=p.gpus[0];
+  $("sysKv").innerHTML=
+    (g?`<span>GPU <b>${g.name}</b></span><span>VRAM <b>${g.vram_gb} GB</b></span><span>driver <b>${g.driver}</b></span>`
+       :`<span><b>No NVIDIA GPU detected</b></span>`)+
+    `<span>RAM <b>${pl.ram_gb} GB</b></span><span>CPU <b>${pl.cpu_count} cores</b></span><span>OS <b>${pl.os} ${pl.arch}</b></span>`;
+  $("models").innerHTML=Object.entries(p.models).map(([k,v])=>
+    `<div class="model"><span class="name">${k}</span><div class="how">${v.how}${v.offload?`<div class="offload">↪ ${v.offload}</div>`:''}</div>${badge(v.local)}</div>`).join('');
+  $("rec").style.display='block'; $("rec").textContent='💡 '+p.recommendation;
+  if(g) for(const o of $("model").options) o.text=k_label(o.value,p.models[o.value]);
+})();
+function k_label(name,v){return name+(v?` (${v.local==='yes'?'local ok':v.local==='tight'?'tight':'RunPod'})`:'');}
+
+/* ---------- credential status ---------- */
+async function refreshStatus(){
+  const s=await api('/api/status');
+  $("keyState").textContent=s.has_key?`(saved ${s.key_masked})`:'(none saved)';
+  if(s.endpoint_id)$("endpointId").value=s.endpoint_id;
+  if(s.docker_image)$("dockerImage").value=s.docker_image;
+}
+refreshStatus();
+
+/* ---------- mode / tabs ---------- */
+let mode='runpod';
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+  if(busy)return;                               // don't switch while jamming
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active'); mode=tab.dataset.tab;
+  $("panel-runpod").style.display=mode==='runpod'?'block':'none';
+  $("panel-local").style.display=mode==='local'?'block':'none';
+  updateAction();
+});
+
+/* ---------- params + sliders (label + live jam push) ---------- */
+const params=()=>({temperature:+$("temperature").value,top_k:+$("top_k").value,
+  cfg_musiccoca:+$("cfg_musiccoca").value,cfg_notes:+$("cfg_notes").value,
+  cfg_drums:+$("cfg_drums").value,drums:+$("drumsMode").value});
+const sendParams=()=>{ if(jamWS&&jamWS.readyState===1) jamWS.send(JSON.stringify({type:'params',...params()})); };
+for(const k of ["temperature","top_k","cfg_musiccoca","cfg_notes","cfg_drums"])
+  $(k).addEventListener('input',()=>{$(k+"_v").textContent=(+$(k).value).toFixed(k==='top_k'?0:(k==='temperature'?2:1));sendParams();});
+$("drumsMode").addEventListener('change',sendParams);
+$("volume").addEventListener('input',()=>{$("volume_v").textContent=Math.round(+$("volume").value*100);if(gMix)gMix.gain.value=+$("volume").value;});
+$("prompt").addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&jamWS&&jamWS.readyState===1){jamWS.send(JSON.stringify({type:'prompt',text:$("prompt").value}));$("genStatus").textContent='Jamming ▸ '+$("prompt").value;}});
+
+/* ---------- GPU tier picker ---------- */
+let selectedTier=null;
+async function loadTiers(){
+  $("gpuModelTag").textContent='for '+$("model").value;
+  const r=await api('/api/runpod/gpu-options?model='+encodeURIComponent($("model").value));
+  selectedTier=null;
+  $("gpuTiers").innerHTML=r.tiers.map((t,i)=>
+    `<div class="gpu${t.recommended?' rec':''}" data-i="${i}">
+       <div class="gpu-h">${t.label}${t.recommended?' ★':''}</div>
+       <div class="gpu-m">${t.vram} · $${t.price_hr}/hr</div>
+       <div class="gpu-b">${t.blurb}</div></div>`).join('');
+  const cards=[...$("gpuTiers").querySelectorAll('.gpu')];
+  cards.forEach(c=>c.onclick=()=>{cards.forEach(x=>x.classList.remove('sel'));c.classList.add('sel');selectedTier=r.tiers[+c.dataset.i];});
+  const rec=r.tiers.findIndex(t=>t.recommended); if(rec>=0)cards[rec].click();
+}
+$("model").addEventListener('change',()=>{loadTiers();});
+loadTiers();
+
+/* ---------- runpod creds + deploy ---------- */
+$("saveKey").onclick=async()=>{
+  await api('/api/runpod/key',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({apiKey:$("apiKey").value.trim()||undefined,
+      endpointId:$("endpointId").value.trim()||undefined,dockerImage:$("dockerImage").value.trim()||undefined})});
+  $("apiKey").value=''; $("rpStatus").textContent='Saved locally ✓'; refreshStatus();
+};
+$("deploy").onclick=async()=>{
+  if(!selectedTier){$("rpStatus").textContent='Pick a GPU option above first.';return;}
+  $("rpStatus").textContent=`Deploying on ${selectedTier.label}…`;
+  const r=await api('/api/runpod/deploy',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({dockerImage:$("dockerImage").value.trim()||undefined,model:$("model").value,
+      gpuTypeIds:selectedTier.gpuTypeIds,workersMin:0,workersMax:2})});
+  $("rpStatus").textContent=r.ok?`Endpoint live: ${r.endpoint_id} ✓ (${selectedTier.label})`:`Deploy failed: ${r.error||JSON.stringify(r)}`;
+  refreshStatus();
+};
+
+/* ---------- local install ---------- */
+$("install").onclick=async()=>{
+  $("instStatus").textContent='Installing… (venv + CUDA JAX + model download, a few minutes)';
+  await api('/api/local/install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:$("model").value})});
+  $("instLog").style.display='block';
+  const poll=setInterval(async()=>{
+    const s=await api('/api/local/status');
+    $("instStatus").textContent=s.running?'Installing…':(s.ok?'Installed ✓. Switch to Jam below':(s.done?'Failed, see log':''));
+    $("instLog").textContent=s.tail||''; if(s.done)clearInterval(poll);
+  },1500);
+};
+
+/* ---------- audio streaming (local jam) ---------- */
+let ctx=null,gMix=null,analyser=null,mediaSrc=null,vizRunning=false,nextTime=0,fmt={sample_rate:48000,channels:2},jamWS=null;
+let capBuf=[],capLen=0; const CAP_SECONDS=30;   // rolling capture of the live jam
+function ensureAudio(){
+  if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)({sampleRate:48000});
+    gMix=ctx.createGain();gMix.gain.value=+$("volume").value;
+    analyser=ctx.createAnalyser();analyser.fftSize=256;
+    gMix.connect(ctx.destination); gMix.connect(analyser); nextTime=0; startViz();}
+  if(ctx.state==='suspended')ctx.resume();
+}
+function startViz(){               // tap the master bus → drive the vfx.html visualizer
+  if(vizRunning)return; vizRunning=true;
+  const buf=new Uint8Array(analyser.frequencyBinCount);
+  (function loop(){
+    if(analyser){analyser.getByteFrequencyData(buf);
+      let b=0,m=0,t=0,s=0;
+      for(let i=0;i<buf.length;i++){const v=buf[i]/255;s+=v;if(i<8)b+=v;else if(i<40)m+=v;else if(i<100)t+=v;}
+      vizAudio({low:b/8,mid:m/32,high:t/60,avg:s/buf.length});}
+    requestAnimationFrame(loop);
+  })();
+}
+function playChunk(buf){
+  const f=new Float32Array(buf,4),frames=f.length/fmt.channels;
+  capBuf.push(f.slice()); capLen+=f.length;            // rolling 30s capture
+  const cap=CAP_SECONDS*fmt.sample_rate*fmt.channels;
+  while(capLen>cap){ capLen-=capBuf.shift().length; }
+  const src=ctx.createBufferSource(),ab=ctx.createBuffer(fmt.channels,frames,fmt.sample_rate);
+  for(let c=0;c<fmt.channels;c++){const ch=ab.getChannelData(c);for(let i=0;i<frames;i++)ch[i]=f[i*fmt.channels+c];}
+  src.buffer=ab;src.connect(gMix);const at=Math.max(ctx.currentTime+0.15,nextTime);src.start(at);nextTime=at+ab.duration;
+}
+async function startJam(){
+  busy=true; updateAction(); $("player").style.display='none'; capBuf=[]; capLen=0;
+  $("genStatus").textContent='Starting engine. First run loads the model (up to a minute)…';
+  const r=await api('/api/local/jam/start',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:$("model").value,prompt:$("prompt").value,...params()})});
+  if(!r.ok){$("genStatus").textContent='Error: '+r.error;busy=false;updateAction();return;}
+  ensureAudio(); connectJam(r.ws,0);
+}
+function connectJam(url,tries){
+  if(!busy)return;
+  jamWS=new WebSocket(url); jamWS.binaryType='arraybuffer';
+  jamWS.onopen=()=>{$("genStatus").textContent='Jamming ▸ '+$("prompt").value;jamWS.send(JSON.stringify({type:'start'}));sendParams();};
+  jamWS.onmessage=ev=>{
+    if(typeof ev.data!=='string'){playChunk(ev.data);return;}
+    const m=JSON.parse(ev.data);
+    if(m.type==='hello'){fmt.sample_rate=m.sample_rate;fmt.channels=m.channels;}
+    else if(m.type==='rtf'){$("genStatus").textContent=`Jamming ▸ RTF ${m.value}× · "${$("prompt").value}"`;}
+  };
+  jamWS.onclose=()=>{ if(busy&&tries<120){$("genStatus").textContent='Loading model… ('+(tries+1)+')';setTimeout(()=>connectJam(url,tries+1),1500);} };
+  jamWS.onerror=()=>{ try{jamWS.close();}catch(e){} };
+}
+async function stopJam(){
+  busy=false; updateAction();
+  try{ if(jamWS&&jamWS.readyState===1)jamWS.send(JSON.stringify({type:'stop'})); jamWS&&jamWS.close(); }catch(e){}
+  jamWS=null; await api('/api/local/jam/stop',{method:'POST'}); $("genStatus").textContent='Stopped.';
+}
+
+/* ---------- RunPod one-shot render ---------- */
+async function renderRunPod(){
+  if(busy)return; busy=true; updateAction(); $("genStatus").textContent='Rendering on RunPod…'; $("player").style.display='none';
+  const body={prompt:$("prompt").value,model:$("model").value,duration:$("duration").value,...params()};
+  try{
+    const r=await api('/api/runpod/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const out=r.data&&r.data.output;
+    if(r.ok&&out&&out.audio_b64){
+      ensureAudio();                                  // route clip through master bus → volume + visualizer
+      if(!mediaSrc){try{mediaSrc=ctx.createMediaElementSource($("player"));mediaSrc.connect(gMix);}catch(e){}}
+      $("player").src='data:audio/wav;base64,'+out.audio_b64;$("player").style.display='block';$("player").play();
+      $("genStatus").textContent='Done ✓ '+(out.rtf?`(RTF ${out.rtf}×)`:'');
+    }else $("genStatus").textContent='Error: '+(r.error||(out&&out.error)||'no audio. Save key + deploy/enter an endpoint id first.');
+  }catch(e){$("genStatus").textContent='Error: '+e;}
+  busy=false; updateAction();
+}
+
+/* ---------- action button (mode-aware) ---------- */
+function updateAction(){
+  const b=$("actionBtn"),s=$("stopBtn"),n=$("newBtn");
+  if(mode==='local'){
+    $("genTitle").textContent='Jam (local real-time)'; b.textContent=busy?'▮ Jamming…':'▶ Start Jamming';
+    b.disabled=busy; s.style.display=busy?'inline-block':'none'; n.style.display=busy?'inline-block':'none';
+  }else{
+    $("genTitle").textContent='Render (RunPod)'; b.textContent='▶ Generate clip'; b.disabled=busy; s.style.display='none'; n.style.display='none';
+  }
+}
+$("actionBtn").onclick=()=>{ if(mode==='local'){ if(!busy)startJam(); } else renderRunPod(); };
+$("stopBtn").onclick=stopJam;
+$("newBtn").onclick=()=>{ if(jamWS&&jamWS.readyState===1){jamWS.send(JSON.stringify({type:'reset'}));capBuf=[];capLen=0;$("genStatus").textContent='New take ▸ '+$("prompt").value;} };
+updateAction();
+
+/* ---------- visualizer switcher ---------- */
+$("viz").addEventListener('change',()=>{ vfxFrame.src='vfx.html?preset='+encodeURIComponent($("viz").value); });
+
+/* ---------- capture / save ---------- */
+function downloadURL(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();}
+function encodeWAV(s,sr,ch){
+  const n=s.length,buf=new ArrayBuffer(44+n*2),v=new DataView(buf);
+  const ws=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i));};
+  ws(0,'RIFF');v.setUint32(4,36+n*2,true);ws(8,'WAVE');ws(12,'fmt ');v.setUint32(16,16,true);
+  v.setUint16(20,1,true);v.setUint16(22,ch,true);v.setUint32(24,sr,true);v.setUint32(28,sr*ch*2,true);
+  v.setUint16(32,ch*2,true);v.setUint16(34,16,true);ws(36,'data');v.setUint32(40,n*2,true);
+  let o=44;for(let i=0;i<n;i++){let x=Math.max(-1,Math.min(1,s[i]));v.setInt16(o,x<0?x*0x8000:x*0x7fff,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+$("saveBtn").onclick=()=>{
+  if(mode!=='local'){
+    if($("player").src){downloadURL($("player").src,'mrt2_render.wav');$("genStatus").textContent='Saved render ✓';}
+    else $("genStatus").textContent='Render a clip first.';
+    return;
+  }
+  if(!capLen){$("genStatus").textContent='Nothing captured yet. Start jamming first.';return;}
+  const merged=new Float32Array(capLen); let off=0; for(const c of capBuf){merged.set(c,off);off+=c.length;}
+  const url=URL.createObjectURL(encodeWAV(merged,fmt.sample_rate,fmt.channels));
+  downloadURL(url,'mrt2_jam_last30s.wav'); setTimeout(()=>URL.revokeObjectURL(url),3000);
+  $("genStatus").textContent='Saved last '+Math.round(capLen/fmt.channels/fmt.sample_rate)+'s ✓';
+};
+</script>
+</body>
+</html>

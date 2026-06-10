@@ -45,9 +45,9 @@ Prefer to do that part yourself first? Either works:
 ## Step 3: Make music
 
 When setup finishes, the Studio opens in your browser. Type a vibe, set the length, press
-**Generate**. Tracks are saved to `oneclick\studio\output\`.
+**Generate**. Tracks are saved to `app\output\`.
 
-Next time, skip Setup. Just double-click **`oneclick\studio\MRT2-Studio.vbs`**.
+Next time, skip Setup. Just double-click **`MRT2-Studio.bat`** in the main folder.
 
 ## If something goes wrong
 

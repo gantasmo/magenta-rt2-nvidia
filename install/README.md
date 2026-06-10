@@ -16,7 +16,7 @@ JAX/CUDA backend.
 From Windows PowerShell:
 
 ```powershell
-wsl -d Ubuntu -- bash "/mnt/<drive>/path/to/port/wsl/generate.sh" "your prompt here" 15 mrt2_small
+wsl -d Ubuntu -- bash "/mnt/<drive>/path/to/install/generate.sh" "your prompt here" 15 mrt2_small
 ```
 
 Arguments: `"<prompt>" <duration_seconds> <model>`. The script writes the `.wav` and copies

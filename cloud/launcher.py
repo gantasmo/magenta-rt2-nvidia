@@ -65,8 +65,8 @@ GPU_TIERS = {
     ],
 }
 
-# Local streaming "jam" server (sibling of this package).
-STREAM_SERVER = os.path.normpath(os.path.join(HERE, "..", "server", "mrt2_server.py"))
+# Local streaming "jam" server (in this folder).
+STREAM_SERVER = os.path.normpath(os.path.join(HERE, "server", "mrt2_server.py"))
 
 
 # --------------------------------------------------------------------------- #

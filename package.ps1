@@ -1,5 +1,5 @@
 # Builds the MRT2 Studio distributable into dist\MRT2-Studio.zip
-# Includes the installer, the one-click app (oneclick), and the WSL2 setup (wsl),
+# Includes the installer, the Studio app (app), the WSL2 setup (install), and the cloud path (cloud),
 # pruning secrets, logs, generated audio, virtual environments, and caches.
 $ErrorActionPreference = 'Stop'
 $root  = $PSScriptRoot
@@ -9,10 +9,16 @@ $stage = Join-Path $dist '_stage\MRT2-Studio'
 if (Test-Path (Join-Path $dist '_stage')) { Remove-Item -Recurse -Force (Join-Path $dist '_stage') }
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
 
-Copy-Item -Recurse (Join-Path $root 'port\oneclick') (Join-Path $stage 'oneclick')
-Copy-Item -Recurse (Join-Path $root 'port\wsl')      (Join-Path $stage 'wsl')
-Copy-Item (Join-Path $root 'setup.ps1')      (Join-Path $stage 'setup.ps1')
-Copy-Item (Join-Path $root 'Setup-MRT2.bat') (Join-Path $stage 'Setup-MRT2.bat')
+Copy-Item -Recurse (Join-Path $root 'app')     (Join-Path $stage 'app')
+Copy-Item -Recurse (Join-Path $root 'install') (Join-Path $stage 'install')
+Copy-Item -Recurse (Join-Path $root 'cloud')   (Join-Path $stage 'cloud')
+Copy-Item (Join-Path $root 'Setup-MRT2.bat')        (Join-Path $stage 'Setup-MRT2.bat')
+Copy-Item (Join-Path $root 'MRT2-Studio.bat')       (Join-Path $stage 'MRT2-Studio.bat')
+Copy-Item (Join-Path $root 'MRT2-Studio.command')   (Join-Path $stage 'MRT2-Studio.command')
+Copy-Item (Join-Path $root 'README.md')             (Join-Path $stage 'README.md')
+Copy-Item (Join-Path $root 'INSTALL.md')            (Join-Path $stage 'INSTALL.md')
+Copy-Item (Join-Path $root 'LICENSE')               (Join-Path $stage 'LICENSE')
+Copy-Item (Join-Path $root 'THIRD_PARTY_NOTICES.md')(Join-Path $stage 'THIRD_PARTY_NOTICES.md')
 
 $readme = @'
 MRT2 STUDIO - HOW TO START
@@ -25,7 +31,7 @@ MRT2 STUDIO - HOW TO START
 2) When setup finishes, the app opens in your web browser.
    Type a vibe, press Generate, and music plays.
 
-Next time, just double-click:  oneclick\studio\MRT2-Studio.vbs
+Next time, just double-click:  MRT2-Studio.bat
 
 Requirements: Windows 10/11 and an NVIDIA GPU. The installer handles the rest.
 '@

@@ -27,7 +27,7 @@ New to "WSL"? The installer turns it on for you. Full walkthrough: **[INSTALL.md
    problems automatically.
 4. When it finishes, the Studio opens in your browser. Type a vibe, press **Generate**.
 
-After the first time, just double-click **`oneclick\studio\MRT2-Studio.vbs`**.
+After the first time, just double-click **`MRT2-Studio.bat`** in the main folder.
 
 ## Features
 
@@ -38,7 +38,7 @@ After the first time, just double-click **`oneclick\studio\MRT2-Studio.vbs`**.
 - **Player tools**: master volume, loop, per-track download, and a history (kept across reloads) that can be renamed, reused, re-downloaded, or cleared.
 - **Any screen**: a compact, collapsible layout that fits one phone screen and expands on desktop.
 
-Every track is also saved to `oneclick\studio\output\`.
+Every track is also saved to `app\output\`.
 
 <p align="center"><img src="docs/studio-mobile.png" alt="MRT2 Studio on a phone" width="320"></p>
 
@@ -54,13 +54,17 @@ Every track is also saved to `oneclick\studio\output\`.
 
 ## Layout
 
+A noob only needs the two double-click files at the top. Everything else is in clearly-named folders.
+
 | Path | Contents |
 |---|---|
-| `Setup-MRT2.bat` / `setup.ps1` | the installer/doctor (system + dependency checks, auto-fix) |
-| `port/oneclick/` | the one-click Studio app and the RunPod cloud path |
-| `port/wsl/` | WSL2 GPU setup and generation scripts |
-| `port/server/` | streaming server |
-| `port/` | CUDA port kit (Dockerfile, build scripts) |
+| `Setup-MRT2.bat` | **double-click to install** (checks your PC, then runs `install/setup.ps1`) |
+| `MRT2-Studio.bat` | **double-click to run** the Studio (Windows) |
+| `MRT2-Studio.command` | double-click to run the cloud launcher (macOS / Linux) |
+| `app/` | the Studio: browser UI, local engine server, and saved `output/` |
+| `install/` | WSL2 GPU setup + dependency doctor (run automatically by Setup) |
+| `cloud/` | optional RunPod cloud path + streaming "jam" server |
+| `engine/` | C++ CUDA port kit (Dockerfile, build scripts) for developers |
 | `port_src/` | upstream Magenta RealTime engine source (git submodule, Apache-2.0) |
 
 ## Packaging
