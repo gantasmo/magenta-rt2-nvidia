@@ -34,9 +34,6 @@ Run the scripts in this folder in order:
 4. `download2.sh`: `mrt checkpoints download mrt2_small.safetensors`.
 5. `generate.sh`: runs `mrt jax generate` and copies the output wav to `output/`.
 
-`discover.sh`, `discover2.sh`, `inspect_paths.sh`, `list_repo.sh`, and `verify_wav.sh` are
-diagnostics.
-
 ## Notes
 
 - GPU JAX runs on Linux and WSL2. The driver provides `/usr/lib/wsl/lib/libcuda.so` for

@@ -47,3 +47,6 @@ repomix-output.md
 /MRT2 Bundle/
 
 # port_src/ is a git submodule (magenta/magenta-realtime), tracked, not ignored.
+
+# ── Local archive of removed/leftover files (kept locally, not tracked) ──
+_archive/
