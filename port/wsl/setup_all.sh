@@ -52,7 +52,7 @@ if deps_ok; then
   say "python deps already present"
 else
   say "installing python deps (magenta-rt, jax[cuda12], numpy, soundfile), large download, please wait"
-  "$UV" pip install --python "$PY" "magenta-rt" "jax[cuda12]" numpy soundfile || \
+  "$UV" pip install --python "$PY" "magenta-rt==2.0.2" "jax[cuda12]==0.10.1" "numpy==2.3.5" "soundfile==0.14.0" || \
     fail "pip install failed (check internet connection and disk space)"
   deps_ok || fail "deps still missing after install"
 fi

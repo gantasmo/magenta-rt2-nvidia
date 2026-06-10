@@ -225,7 +225,7 @@ def _run_install(model):
                            "python.exe" if platform.system() == "Windows" else "python")
         sh([vpy, "-m", "pip", "install", "--upgrade", "pip"])
         # JAX CUDA + the library. (CPU jax is the fallback if no CUDA wheel matches.)
-        rc = sh([vpy, "-m", "pip", "install", "magenta-rt", "jax[cuda12]", "websockets", "numpy"])
+        rc = sh([vpy, "-m", "pip", "install", "magenta-rt==2.0.2", "jax[cuda12]==0.10.1", "websockets", "numpy==2.3.5"])
         if rc == 0:
             # Download shared resources + the chosen model's safetensors (JAX needs these).
             scripts = os.path.join(venv, "Scripts" if platform.system() == "Windows" else "bin")

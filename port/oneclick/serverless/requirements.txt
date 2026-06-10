@@ -1,4 +1,7 @@
+# Pinned to the versions verified working with MRT2 Studio (mrt2_small on JAX/CUDA12).
+# Bump deliberately; an unpinned jax/magenta-rt release can break the worker.
 runpod
-magenta-rt
-jax[cuda12]
-numpy
+magenta-rt==2.0.2
+jax[cuda12]==0.10.1
+numpy==2.3.5
+soundfile==0.14.0
