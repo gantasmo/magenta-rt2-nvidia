@@ -10,92 +10,240 @@
   :root{
     --bg:#0a0b12; --panel:rgba(255,255,255,.04); --panel2:rgba(255,255,255,.06);
     --line:rgba(255,255,255,.10); --txt:#e9ecff; --dim:#9aa0c0;
-    --acc:#7c5cff; --acc2:#21d4fd; --good:#39d98a; --bad:#ff5d6c; --tap:42px;
+    --acc:#7c5cff; --acc2:#21d4fd; --good:#39d98a; --bad:#ff5d6c; --tap:36px;
+    --chrome:linear-gradient(180deg,#f7f9fd 0%,#d3dae6 14%,#9aa4b5 38%,#6b7384 49%,
+      #586073 51%,#838c9d 60%,#b7c0ce 84%,#e9eef6 100%);
+    --brush:repeating-linear-gradient(90deg,rgba(255,255,255,.13) 0 1px,rgba(0,0,0,.06) 1px 2px);
+    --gun:linear-gradient(180deg,#2d3340 0%,#222734 55%,#181b24 100%);
+    --bevel:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.55);
   }
   *{box-sizing:border-box}
-  html,body{margin:0;min-height:100%}
+  html,body{margin:0;height:100%;overflow:hidden}
   body{
     background-color:var(--bg);
-    background-image:radial-gradient(1200px 800px at 70% -10%, #1a1740 0%, rgba(10,11,18,0) 60%);
-    color:var(--txt); font:15px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,Arial;
-    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    background-image:
+      radial-gradient(1100px 540px at 50% -14%, rgba(124,92,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 102% 116%, rgba(33,212,253,.07), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 2px, transparent 2px 4px),
+      var(--bg);
+    color:var(--txt); font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,Arial;
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1080px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) clamp(10px,4vw,22px) 40px}
-  header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-  .logo{font-weight:800;font-size:clamp(18px,5vw,23px);letter-spacing:.5px;white-space:nowrap}
-  .logo b{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .pill{margin-left:auto;display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;color:var(--dim);
-        border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--panel)}
-  #stat{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:44vw}
+  /* ── app shell: exactly the live window, never scrolls ── */
+  #app{height:var(--appvh,100dvh);display:flex;flex-direction:column;gap:8px;
+       padding:8px clamp(8px,1.4vw,16px);overflow:hidden}
+  .chrome{background:var(--brush),var(--chrome);
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 5px rgba(0,0,0,.4),0 6px 16px rgba(0,0,0,.5)}
+  .panel{position:relative;border:1px solid rgba(255,255,255,.22);border-radius:13px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0) 7%,rgba(0,0,0,.22) 55%,rgba(255,255,255,.05) 93%,rgba(255,255,255,.16)),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,rgba(0,0,0,.03) 1px 2px),
+      linear-gradient(180deg,#3a4150 0%,#2b313e 50%,#20242e 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05),0 10px 26px rgba(0,0,0,.5)}
+  .panel::before{content:"";position:absolute;left:8px;right:8px;top:0;height:3px;border-radius:0 0 4px 4px;
+    background:var(--brush),var(--chrome);opacity:.85;pointer-events:none}
+  /* ── header (chrome rack faceplate) ── */
+  header{display:flex;align-items:center;gap:10px;flex:none;border-radius:12px;padding:7px 10px}
+  .brand{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#0d101c,#05060d);
+    border:1px solid rgba(0,0,0,.7);border-radius:9px;padding:6px 12px;
+    box-shadow:inset 0 0 14px rgba(124,92,255,.28),inset 0 1px 0 rgba(255,255,255,.07),0 2px 4px rgba(0,0,0,.5)}
+  .logoico{width:24px;height:24px;flex:none;filter:drop-shadow(0 0 7px rgba(124,92,255,.8))}
+  .brand .nm{font-weight:800;font-size:clamp(15px,2.4vw,19px);letter-spacing:.6px;white-space:nowrap;
+    color:#cbb8ff;text-shadow:0 0 9px rgba(124,92,255,.85),0 0 3px rgba(124,92,255,.6)}
+  .brand .nm b{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+  .byline{font-size:9px;font-weight:700;color:#7c84a0;letter-spacing:1.3px;text-transform:uppercase}
+  .pill{display:flex;align-items:center;gap:7px;min-width:0;font-size:12px;color:#cfd6ff;
+    background:linear-gradient(180deg,#0d101c,#06070f);border:1px solid rgba(0,0,0,.6);border-radius:999px;
+    padding:5px 11px;box-shadow:inset 0 0 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05)}
+  #stat{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:30vw;
+    font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;color:#cbb8ff;text-shadow:0 0 7px rgba(124,92,255,.8)}
   .dot{width:9px;height:9px;border-radius:50%;background:#888;box-shadow:0 0 10px #888;flex:none}
   .dot.ok{background:var(--good);box-shadow:0 0 12px var(--good)}
   .dot.busy{background:var(--acc2);box-shadow:0 0 12px var(--acc2);animation:pulse 1s infinite}
   .dot.err{background:var(--bad);box-shadow:0 0 12px var(--bad)}
   @keyframes pulse{50%{opacity:.35}}
-  button{font:inherit;color:var(--txt);cursor:pointer;border:1px solid var(--line);
-         background:var(--panel);border-radius:12px;padding:9px 14px;transition:.15s;min-height:var(--tap)}
-  button:hover{border-color:var(--acc);background:rgba(124,92,255,.12)}
-  button:disabled{opacity:.4;cursor:not-allowed}
-  .ghost{padding:6px 11px;font-size:13px;color:var(--dim);min-height:0;flex:none}
-  .mini{padding:6px 10px;font-size:12.5px;color:var(--dim);min-height:0;border-radius:9px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(12px,3vw,18px);margin-bottom:12px;backdrop-filter:blur(8px)}
-  .between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  label,.lbl{display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
-  textarea{width:100%;min-height:60px;resize:vertical;background:#0c0e1a;color:var(--txt);
-           border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit}
-  textarea:focus{outline:none;border-color:var(--acc)}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .chip{font-size:12.5px;color:var(--dim);border:1px dashed var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;min-height:0;white-space:nowrap}
-  .chip:hover{color:var(--txt);border-color:var(--acc)}
-  details.auto>summary{list-style:none;cursor:pointer;color:var(--dim);font-size:13px;
-        padding:9px 0 4px;display:flex;align-items:center;gap:7px;user-select:none}
-  details.auto>summary::-webkit-details-marker{display:none}
-  details.auto>summary::before{content:"▸";transition:.15s;color:var(--acc)}
-  details.auto[open]>summary::before{transform:rotate(90deg)}
-  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 16px;margin-top:10px}
-  .knob .row{display:flex;justify-content:space-between;align-items:baseline}
-  .knob .val{font-variant-numeric:tabular-nums;color:var(--acc2);font-weight:600}
-  input[type=range]{width:100%;accent-color:var(--acc);margin-top:2px;height:22px}
-  .drumsrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
-  .drumsrow>label,.drumsrow>.lbl{margin:0}
-  .seg{display:inline-flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel)}
-  .seg button{border:none;border-radius:0;background:transparent;padding:8px 13px;font-size:13px;color:var(--dim);min-height:0}
-  .seg button.on{background:linear-gradient(90deg,var(--acc),#5a78ff);color:#fff}
-  .seg.small button{padding:7px 11px;font-size:12.5px}
-  .actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
-  .btn{font-size:15px;font-weight:700;padding:13px 16px;border-radius:13px}
-  .btn.primary{flex:1;min-width:120px;background:linear-gradient(90deg,var(--acc),#5a78ff);border:none}
-  .btn.primary:hover{filter:brightness(1.08)}
-  .btn.sec{background:var(--panel2)}
-  .meta{font-size:12.5px;color:var(--dim);flex-basis:100%;min-height:1em}
-  .viztoolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-  .viztoolbar .vol{display:flex;align-items:center;gap:7px;margin:0;color:var(--dim);font-size:13px;text-transform:none;letter-spacing:0}
-  .viztoolbar .vol input{width:88px}
-  .viztoolbar .loop{display:flex;align-items:center;gap:6px;margin:0;color:var(--dim);font-size:13px;text-transform:none;letter-spacing:0;cursor:pointer}
-  canvas{width:100%;height:clamp(110px,20vw,190px);display:block;border-radius:12px;background:#070815}
-  .np{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-  audio{flex:1;min-width:200px;height:38px}
-  .dl{color:var(--acc2);text-decoration:none;font-size:13px;white-space:nowrap}
-  .hist{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-  .item{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:7px 9px}
-  .item .play{flex:none;width:36px;height:36px;border-radius:9px;padding:0;display:grid;place-items:center;font-size:15px}
-  .item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;color:var(--txt);padding:4px 2px;min-height:0;cursor:text}
+  .hbtns{margin-left:auto;display:flex;gap:7px}
+  .cbtn{font:inherit;font-size:12.5px;font-weight:600;color:#1b2230;cursor:pointer;white-space:nowrap;
+    background:var(--brush),linear-gradient(180deg,#fbfcfe,#cdd4e0 50%,#aeb6c4 52%,#e6ebf3);
+    border:1px solid rgba(255,255,255,.6);border-radius:9px;padding:6px 11px;min-height:var(--tap);
+    box-shadow:var(--bevel),0 2px 5px rgba(0,0,0,.4);transition:.12s}
+  .cbtn:hover{filter:brightness(1.06)}
+  .cbtn:active{box-shadow:inset 0 2px 5px rgba(0,0,0,.45)}
+  /* ── waveform strip (top, never more than ~20% of window height) ── */
+  .wave{flex:none;display:flex;flex-direction:column;gap:6px;padding:8px 10px}
+  .transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .vol,.loop{display:flex;align-items:center;gap:6px;margin:0;color:var(--dim);font-size:12px;text-transform:none;letter-spacing:0;cursor:pointer}
+  .vol input{width:84px;accent-color:var(--acc)}
+  audio{height:32px;max-width:min(38vw,420px);flex:1;min-width:160px}
+  .dl{color:var(--acc2);text-decoration:none;font-size:12.5px;white-space:nowrap}
+  #nowmeta{flex:1;min-width:0;font-size:11.5px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  canvas{width:100%;height:min(20vh,230px);display:block;border-radius:10px;background:#06070f;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 2px 18px rgba(0,0,0,.7)}
+  /* ── main row: console (tabs) + collapsible library ── */
+  #main{flex:1;min-height:0;display:flex;gap:8px}
+  .console{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding:10px}
+  .library{flex:none;width:clamp(240px,21vw,320px);display:flex;flex-direction:column;gap:8px;padding:10px;
+    transition:width .2s ease;overflow:hidden}
+  #app.lib-collapsed .library{width:46px;padding:10px 6px}
+  #app.lib-collapsed .library .libttl,#app.lib-collapsed .library #dlall,
+  #app.lib-collapsed .library #clear,#app.lib-collapsed .library .hist{display:none}
+  .libhead{display:flex;align-items:center;gap:7px;flex:none}
+  .libttl{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);flex:1;white-space:nowrap;overflow:hidden}
+  .libtgl{font:inherit;font-size:13px;color:#dfe4ff;cursor:pointer;background:linear-gradient(180deg,#2b303d,#1b1f29);
+    border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 8px;min-height:0}
+  .libtgl:hover{border-color:var(--acc)}
+  /* tabs */
+  .tabs{display:flex;gap:6px;flex:none}
+  .tab{font:inherit;font-size:12.5px;font-weight:700;color:#cfd6ff;cursor:pointer;white-space:nowrap;
+    background:linear-gradient(180deg,#2b303d,#1b1f29);border:1px solid rgba(255,255,255,.13);
+    border-radius:9px 9px 0 0;padding:8px 13px;min-height:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .tab:hover{color:#fff;border-color:var(--acc)}
+  .tab.on{background:linear-gradient(180deg,#8a6bff,#5a3ff0);color:#fff;border-color:transparent;box-shadow:0 0 12px rgba(124,92,255,.45),inset 0 1px 0 rgba(255,255,255,.25)}
+  .panes{flex:1;min-height:0;border-top:1px solid rgba(255,255,255,.12);padding-top:8px}
+  .pane{display:none;height:100%;overflow:hidden;flex-direction:column;gap:8px}
+  .pane.on{display:flex}
+  .rowhead{display:flex;align-items:center;gap:8px;flex:none}
+  label,.lbl{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);margin:0}
+  .muted{color:var(--dim);font-size:12px}.cnt{color:var(--acc2);font-weight:600}
+  .grow{flex:1;min-width:0}
+  textarea{width:100%;flex:none;height:clamp(50px,9vh,96px);min-height:44px;resize:none;background:#0a0c16;color:var(--txt);
+    border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 11px;font:inherit;
+    box-shadow:inset 0 1px 6px rgba(0,0,0,.6)}
+  textarea:focus{outline:none;border-color:var(--acc);box-shadow:inset 0 1px 6px rgba(0,0,0,.6),0 0 0 2px rgba(124,92,255,.25)}
+  .mini{font:inherit;font-size:12px;color:var(--dim);cursor:pointer;background:linear-gradient(180deg,#2a2f3b,#1c2029);
+    border:1px solid rgba(255,255,255,.13);border-radius:8px;padding:6px 9px;min-height:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+  .mini:hover{color:var(--txt);border-color:var(--acc)}
+  /* genre palette + quantized stack */
+  .palette{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;flex:1;min-height:0;overflow:hidden}
+  .gbtn{font:inherit;font-size:11px;color:var(--dim);cursor:pointer;white-space:nowrap;height:fit-content;
+    background:linear-gradient(180deg,#262b36,#191d26);border:1px solid rgba(255,255,255,.1);
+    border-radius:999px;padding:4px 9px;min-height:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  .gbtn:hover{color:var(--txt);border-color:var(--acc)}
+  .gbtn.on{color:#fff;background:linear-gradient(180deg,#8a6bff,#5a3ff0);border-color:transparent;
+    box-shadow:0 0 12px rgba(124,92,255,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+  .genstack{display:flex;flex-wrap:wrap;gap:6px;flex:none;align-content:flex-start;max-height:30%;overflow:auto;scrollbar-width:none}
+  .genstack::-webkit-scrollbar{display:none}
+  .gx{font-size:11px}
+  .gtag{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(180deg,#20242f,#15181f);
+    border:1px solid rgba(124,92,255,.4);border-radius:8px;padding:3px 5px 3px 9px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 10px rgba(124,92,255,.18)}
+  .gtag .gnm{font-size:11.5px;color:#e9ecff;white-space:nowrap}
+  .glv{display:inline-flex;gap:2px;cursor:pointer;align-items:flex-end;height:14px}
+  .glv i{width:3.5px;border-radius:1px;background:rgba(255,255,255,.16);display:block}
+  .glv i:nth-child(1){height:6px}.glv i:nth-child(2){height:9px}.glv i:nth-child(3){height:12px}.glv i:nth-child(4){height:14px}
+  .glv i.lit{background:linear-gradient(180deg,#c9b6ff,#7c5cff);box-shadow:0 0 5px rgba(124,92,255,.8)}
+  .grm{font:inherit;line-height:1;color:var(--dim);background:none;border:0;cursor:pointer;font-size:13px;padding:0 2px}
+  .grm:hover{color:var(--bad)}
+  /* vertical mini-fader row */
+  #pane-sound{justify-content:center}     /* centre the fader bank vertically */
+  .vrow{display:flex;gap:10px;align-items:stretch;flex:none;height:clamp(150px,28vh,240px);justify-content:space-evenly}
+  .vslider{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0;max-width:96px}
+  .vval{font:600 11px/1 ui-monospace,"Cascadia Mono",Consolas,monospace;color:#cbb8ff;
+    text-shadow:0 0 7px rgba(124,92,255,.85);font-variant-numeric:tabular-nums;flex:none}
+  .vtrack{flex:1;display:flex;justify-content:center;align-items:stretch;min-height:70px}
+  .vslider input[type=range]{-webkit-appearance:slider-vertical;appearance:slider-vertical;
+    writing-mode:vertical-lr;direction:rtl;width:22px;height:100%;accent-color:var(--acc);cursor:pointer;margin:0}
+  .vlbl{font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);text-align:center;flex:none}
+  .drumsblock{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none}
+  .drumsblock .vtrack{align-items:center}
+  .seg{display:inline-flex;border:1px solid rgba(255,255,255,.13);border-radius:9px;overflow:hidden;
+    background:linear-gradient(180deg,#23283400,#181b22)}
+  .seg button{font:inherit;border:none;border-radius:0;background:transparent;padding:6px 11px;font-size:12px;color:var(--dim);min-height:0;cursor:pointer}
+  .seg button.on{background:linear-gradient(180deg,#8a6bff,#5a3ff0);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+  .seg.vert{flex-direction:column}.seg.vert button{padding:5px 12px}
+  .seg.small button{padding:5px 9px;font-size:11.5px}
+  /* actions */
+  .actions{display:flex;gap:8px;align-items:center;flex:none}
+  .btn{font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;color:#fff;border-radius:10px;padding:9px 18px;border:none}
+  .go{flex:none;background:linear-gradient(180deg,#9a7bff,#5a3ff0);
+    box-shadow:0 0 16px rgba(124,92,255,.5),inset 0 1px 0 rgba(255,255,255,.35);letter-spacing:.3px}
+  .go:hover{filter:brightness(1.08)}
+  .go:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+  .ext{flex:none;color:#dfe4ff;background:linear-gradient(180deg,#2b303d,#1b1f29);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+  .ext:disabled{opacity:.4;cursor:not-allowed}
+  .meta{font-size:11.5px;color:var(--dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* advanced pane: style mix + notes + seed */
+  .advscroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+  .hint2{font-size:11.5px;color:var(--dim);margin:0}
+  .mixadd{display:flex;gap:8px;flex-wrap:wrap}
+  .mixrow{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
+  .mixrow .src{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+  .mixrow .src .tag{font-size:11px;color:var(--acc2);white-space:nowrap}
+  .mixrow input.txt{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--txt);font-size:13px;outline:none;padding:2px 0}
+  .mixrow .w{display:flex;flex-direction:column;align-items:flex-end;width:92px}
+  .mixrow .w input{width:92px;accent-color:var(--acc)}
+  .mixrow .wv{font-size:11px;color:var(--acc2)}
+  .mixrow .rm{cursor:pointer;color:var(--dim);background:none;border:0;font-size:17px;line-height:1;padding:0 2px}
+  .mixrow .rm:hover{color:var(--bad)}
+  .advcols{display:flex;gap:14px;flex-wrap:wrap}
+  .advcol{flex:1;min-width:200px;display:flex;flex-direction:column;gap:7px}
+  .octrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:none}
+  .keys{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;flex:none}
+  .key{padding:11px 0;text-align:center;font-size:12px;border:1px solid var(--line);border-radius:8px;
+    background:linear-gradient(180deg,#262b36,#191d26);cursor:pointer;user-select:none;color:var(--txt)}
+  .key.sharp{color:var(--dim);background:linear-gradient(180deg,#1a1e27,#121620)}
+  .key.on{background:linear-gradient(180deg,#8a6bff,#5a3ff0);color:#fff;border-color:transparent;box-shadow:0 0 10px rgba(124,92,255,.5)}
+  .seedrow{display:flex;gap:8px;align-items:center}
+  .seedrow input{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:13px}
+  /* library / history list */
+  .hist{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:auto;scrollbar-width:thin}
+  .hist::-webkit-scrollbar{width:7px}.hist::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:7px}
+  .item{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:7px 9px;background:var(--panel)}
+  .item .play{flex:none;width:32px;height:32px;border-radius:9px;padding:0;display:grid;place-items:center;font-size:14px;
+    background:linear-gradient(180deg,#2b303d,#1b1f29);border:1px solid rgba(255,255,255,.13);color:var(--txt);cursor:pointer}
+  .item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;color:var(--txt);padding:4px 2px;cursor:text;font:inherit}
   .item .t:focus{outline:1px solid var(--acc);border-radius:6px}
-  .item .s{font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .item .s{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
   .item .act{display:flex;gap:4px;flex:none}
-  .item .act button{padding:7px 9px;font-size:13px;border-radius:9px;min-height:0}
-  .muted{color:var(--dim);font-size:13px}
-  footer{text-align:center;margin-top:18px;color:var(--dim);font-size:12.5px}
+  .item .act button{padding:6px 7px;font-size:12px;border-radius:8px;min-height:0;background:linear-gradient(180deg,#2b303d,#1b1f29);border:1px solid rgba(255,255,255,.12);color:var(--dim);cursor:pointer}
+  .item .act button:hover{color:var(--txt);border-color:var(--acc)}
   .err{color:var(--bad)}
-  #ov{position:fixed;inset:0;background:rgba(6,7,16,.92);display:flex;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(6px);padding:24px}
+  /* ── global 3D control bar (transport + actions), based on the pure-CSS 3D media deck ── */
+  .controlbar{flex:none;position:relative;padding:0 2px}
+  .cb-deck{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:16px;
+    background:linear-gradient(180deg,#2a2a31,#191920);border:1px solid #3a3a40;
+    box-shadow:0 6px 0 #131318,0 12px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07)}
+  .cb-group{display:flex;align-items:center;gap:8px}
+  .cb-left{margin-right:auto}.cb-right{margin-left:auto}
+  .cb-status{font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;max-width:26vw;text-align:center}
+  .cb-status .err{color:var(--bad)}
+  .cb-btn{font:inherit;font-weight:700;font-size:13px;color:#cfd6ff;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#2c303b,#15181f);border:1px solid #3a3f4a;border-radius:11px;padding:9px 15px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 3px 0 #0e1016,0 5px 11px rgba(0,0,0,.5);transition:filter .12s,color .12s,box-shadow .08s,transform .08s}
+  .cb-btn .ic{font-size:14px;line-height:1}
+  .cb-btn:hover{color:#fff;border-color:var(--acc)}
+  .cb-btn:active{transform:translateY(3px);box-shadow:inset 0 2px 6px rgba(0,0,0,.55)}
+  .cb-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transform:none}
+  .cb-play{color:var(--acc2);text-shadow:0 0 8px rgba(33,212,253,.75),0 0 16px rgba(33,212,253,.45)}
+  .cb-play.playing{color:#ff6b8a;text-shadow:0 0 8px rgba(255,93,108,.75),0 0 16px rgba(255,93,108,.4)}
+  .cb-toggle.on{color:#fff;border-color:var(--acc);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 0 13px rgba(124,92,255,.55),0 3px 0 #0e1016}
+  .cb-go{color:#fff;font-size:14px;padding:10px 20px;letter-spacing:.3px;
+    background:linear-gradient(180deg,#9a7bff,#5a3ff0);border-color:#7c5cff;text-shadow:0 0 8px rgba(124,92,255,.6);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 3px 0 #3a2a9a,0 6px 15px rgba(124,92,255,.45)}
+  .cb-go:hover{filter:brightness(1.08);color:#fff}
+  .cb-go:active{transform:translateY(3px);box-shadow:inset 0 2px 7px rgba(0,0,0,.45)}
+  .cb-go:disabled{opacity:.45;box-shadow:none;filter:none}
+  .cb-ext{background:linear-gradient(180deg,#2c303b,#15181f)}
+  /* ── noob-friendly hover tooltip ── */
+  #tip{position:fixed;z-index:120;max-width:300px;pointer-events:none;opacity:0;visibility:hidden;
+    background:linear-gradient(180deg,#1c2030,#0e111a);border:1px solid rgba(124,92,255,.5);color:#e9ecff;
+    font-size:12px;line-height:1.45;padding:8px 11px;border-radius:9px;
+    box-shadow:0 12px 30px rgba(0,0,0,.6),0 0 14px rgba(124,92,255,.22);transition:opacity .12s ease}
+  #tip.on{opacity:1;visibility:visible}
+  /* overlay */
+  #ov{position:fixed;inset:0;background:rgba(6,7,16,.92);display:flex;align-items:center;justify-content:center;z-index:70;backdrop-filter:blur(6px);padding:24px}
   #ov .box{text-align:center;max-width:440px}
-  /* Docs panel */
-  #docs{position:fixed;inset:0;background:rgba(6,7,16,.96);display:none;z-index:60;backdrop-filter:blur(6px);padding:24px}
+  .spinner{width:54px;height:54px;border-radius:50%;margin:0 auto 18px;border:4px solid rgba(255,255,255,.12);border-top-color:var(--acc);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* docs */
+  #docs{position:fixed;inset:0;background:rgba(6,7,16,.96);display:none;z-index:80;backdrop-filter:blur(6px);padding:20px}
   #docs.show{display:flex;align-items:flex-start;justify-content:center}
-  .dcard{background:var(--bg);border:1px solid var(--line);border-radius:16px;width:min(880px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
-  .dhead{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line);background:var(--bg)}
-  .dhead h2{margin:0;font-size:17px}
-  .dhead .x{margin-left:auto}
+  .dcard{background:var(--bg);border:1px solid var(--line);border-radius:16px;width:min(880px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .dhead{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--bg)}
+  .dhead h2{margin:0;font-size:17px}.dhead .x{margin-left:auto}
   .dbody{padding:4px 20px 26px;overflow:auto}
   .dnav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;position:sticky;top:0;background:var(--bg);z-index:1;border-bottom:1px solid var(--line);margin-bottom:6px}
   .dnav a{font-size:12.5px;color:var(--acc2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 11px}
@@ -109,124 +257,197 @@
   .dbody pre code{background:none;border:none;padding:0;color:#cdd5ff;font-size:12px;white-space:pre}
   .dtable{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
   .dtable th,.dtable td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
-  .dtable th{color:var(--txt);background:var(--panel)}
-  .dtable td{color:var(--dim)}
+  .dtable th{color:var(--txt);background:var(--panel)}.dtable td{color:var(--dim)}
   .dgrid{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
   .dgrid figure{margin:0;flex:1;min-width:240px}
-  .dshot{width:100%;border:1px solid var(--line);border-radius:10px}
-  .dshot.mob{max-width:260px}
+  .dshot{width:100%;border:1px solid var(--line);border-radius:10px}.dshot.mob{max-width:260px}
   .dgrid figcaption{font-size:12px;color:var(--dim);margin-top:5px}
   .dmeth{display:inline-block;font-weight:700;font-size:11px;border-radius:5px;padding:1px 7px;margin-right:7px;color:#fff;vertical-align:middle}
-  .dmeth.get{background:#1f9d76}
-  .dmeth.post{background:var(--acc)}
+  .dmeth.get{background:#1f9d76}.dmeth.post{background:var(--acc)}
   .dabout a{color:var(--acc2)}
-  .spinner{width:54px;height:54px;border-radius:50%;margin:0 auto 18px;border:4px solid rgba(255,255,255,.12);border-top-color:var(--acc);animation:spin 1s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  /* desktop: panels always expanded, no summary chrome */
-  @media (min-width:641px){
-    details.auto>summary{display:none}
+  /* ── roomy windows: drop the tabs and show every section at once ── */
+  @media (min-width:1140px) and (min-height:660px){
+    .tabs{display:none}
+    .panes{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-rows:auto 1fr;
+      gap:12px;border-top:none;padding-top:0}
+    .pane{display:flex;height:auto;min-height:0}
+    #pane-compose{grid-column:1;grid-row:1 / span 2}
+    #pane-sound{grid-column:2;grid-row:1;justify-content:flex-start}
+    #pane-adv{grid-column:2;grid-row:2}
+    #pane-sound .vrow{height:clamp(150px,22vh,210px);margin-top:2px}
   }
-  /* mobile: compact */
-  @media (max-width:640px){
-    .card{margin-bottom:10px}
-    .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-    .chips::-webkit-scrollbar{display:none}
-    .chip{flex:none}
-    .controls{grid-template-columns:1fr 1fr;gap:10px 12px}
-    .btn.primary{min-width:0}
-    .item .s{display:none}
+  /* ── phones: lift the no-scroll clip and stack into one scrollable column ── */
+  @media (max-width:900px){
+    html,body{height:auto;overflow-x:hidden;overflow-y:auto}
+    #app{height:auto;min-height:100dvh;overflow:visible;gap:8px}
+    #main{flex-direction:column;flex:none}
+    .console,.library{width:auto}
+    .library{order:3}
+    #app.lib-collapsed .library{width:auto;padding:10px}
+    #app.lib-collapsed .library .libttl,#app.lib-collapsed .library #dlall,
+    #app.lib-collapsed .library #clear,#app.lib-collapsed .library .hist{display:flex}
+    .pane{height:auto;overflow:visible}
+    .palette{flex:none;overflow:visible}
+    .vrow{height:165px;flex:none}
+    .genstack{max-height:none}
+    canvas{height:26vh;max-height:220px}
+    #stat{max-width:34vw}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo">MRT2 <b>Studio</b></div>
+<div id="app">
+  <header class="chrome">
+    <div class="brand">
+      <img class="logoico" src="/favicon.svg" alt="">
+      <div style="display:flex;flex-direction:column;line-height:1.05">
+        <span class="nm">MRT2 <b>Studio</b></span>
+        <span class="byline">by GANTASMO</span>
+      </div>
+    </div>
     <div class="pill"><span id="dot" class="dot"></span><span id="stat">connecting…</span></div>
-    <button class="ghost" id="docsbtn" title="Quickstart, API and troubleshooting">📖 Docs</button>
-    <button class="ghost" id="quit" title="Stop the engine">⏻ Quit</button>
+    <div class="hbtns">
+      <button class="cbtn" id="docsbtn" data-tip="Open the full guide: quickstart, what every control does, the API, and troubleshooting.">📖 Docs</button>
+      <button class="cbtn" id="quit" data-tip="Stop the music engine. Double-click MRT2-Studio to start it again.">⏻ Quit</button>
+    </div>
   </header>
 
-  <section class="card">
-    <div class="between">
-      <label for="prompt" style="margin:0">Describe the music you want</label>
-      <button class="mini" id="surprise" title="Random idea">🎲 Surprise me</button>
-    </div>
-    <textarea id="prompt" placeholder="e.g. dreamy lo-fi hip hop with rain on a window and a mellow piano">upbeat disco funk with a fat bassline and bright horns</textarea>
-    <div class="chips" id="chips"></div>
-
-    <details class="auto" id="more">
-      <summary>Sound controls</summary>
-      <div class="controls">
-        <div class="knob"><div class="row"><label for="dur">Length</label><span class="val" id="durV">30s</span></div>
-          <input type="range" id="dur" min="4" max="180" step="1" value="30"></div>
-        <div class="knob"><div class="row"><label for="temp">Temperature</label><span class="val" id="tempV">1.30</span></div>
-          <input type="range" id="temp" min="0.5" max="2.0" step="0.05" value="1.3"></div>
-        <div class="knob"><div class="row"><label for="tk">Top-k</label><span class="val" id="tkV">40</span></div>
-          <input type="range" id="tk" min="1" max="200" step="1" value="40"></div>
-        <div class="knob"><div class="row"><label for="cs">Style strength</label><span class="val" id="csV">3.0</span></div>
-          <input type="range" id="cs" min="0" max="7" step="0.1" value="3.0"></div>
-        <div class="knob"><div class="row"><label for="cn">Melody strength</label><span class="val" id="cnV">1.0</span></div>
-          <input type="range" id="cn" min="0" max="7" step="0.1" value="1.0"></div>
-        <div class="knob"><div class="row"><label for="cd">Drum strength</label><span class="val" id="cdV">1.0</span></div>
-          <input type="range" id="cd" min="0" max="7" step="0.1" value="1.0"></div>
+  <!-- waveform strip (top, <= 20% of window height) -->
+  <section class="wave panel">
+    <div class="transport">
+      <div class="seg small" id="vizseg" data-tip="Visualizer style — switch how the sound is drawn: frequency Bars, a Waveform line, or a Radial burst.">
+        <button data-v="bars" class="on" type="button">Bars</button><button data-v="wave" type="button">Wave</button><button data-v="radial" type="button">Radial</button>
       </div>
-      <div class="drumsrow">
-        <span class="lbl" id="drumlbl">Drums</span>
-        <div class="seg" id="drumseg" role="group" aria-labelledby="drumlbl">
-          <button data-v="-1" class="on">Auto</button><button data-v="1">On</button><button data-v="0">Off</button>
+      <label class="vol" data-tip="Playback volume for the visualizer/player.">🔊<input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Volume"></label>
+      <audio id="player" controls></audio>
+      <a class="dl" id="dl" download data-tip="Download this track as a .wav file. (Every track is also auto-saved to the output folder.)">⤓ Download</a>
+      <span id="nowmeta">Your music plays here · saved to studio\output\.</span>
+    </div>
+    <canvas id="viz" width="1280" height="220"></canvas>
+  </section>
+
+  <main id="main">
+    <!-- console with tabs -->
+    <section class="console panel">
+      <div class="tabs" role="tablist">
+        <button class="tab on" data-pane="compose" type="button" role="tab" data-tip="Compose — write your prompt and stack genre tags. This is where you describe the music.">🎛 Compose</button>
+        <button class="tab" data-pane="sound" type="button" role="tab" data-tip="Sound — the dials: length, randomness, and how strongly your style, melody and drums are applied.">🎚 Sound</button>
+        <button class="tab" data-pane="adv" type="button" role="tab" data-tip="Mix &amp; Notes — blend extra styles or an audio clip, pick melody notes on the keyboard, and lock a seed.">🎹 Mix &amp; Notes</button>
+      </div>
+
+      <div class="panes">
+        <!-- Compose -->
+        <div class="pane on" id="pane-compose" role="tabpanel">
+          <div class="rowhead"><label for="prompt" class="grow" data-tip="Describe the music in plain words — instruments, mood, tempo, era. Be specific. Or hit Surprise in the bottom bar for an idea.">Describe the music</label></div>
+          <textarea id="prompt" data-tip="Type what you want to hear. Stacking genre tags below adds rich detail automatically." placeholder="e.g. dreamy lo-fi hip hop with rain on a window and a mellow piano">upbeat disco funk with a fat bassline and bright horns</textarea>
+          <div class="rowhead"><span class="lbl grow" data-tip="Genre tags — tap one to add its described style to your prompt. Stack several to blend them.">Genres <span class="muted cnt" id="genCnt"></span></span>
+            <span class="muted" style="font-size:10px">tap to stack · click bars to quantize</span></div>
+          <div class="palette" id="palette"></div>
+          <div class="genstack" id="genstack"></div>
+        </div>
+
+        <!-- Sound -->
+        <div class="pane" id="pane-sound" role="tabpanel">
+          <div class="vrow">
+            <div class="vslider" data-tip="Length — how many seconds of music to make (4–180). Longer tracks take more time to generate."><span class="vval" id="durV">30s</span>
+              <span class="vtrack"><input type="range" id="dur" min="4" max="180" step="1" value="30" orient="vertical" aria-label="Length"></span>
+              <label class="vlbl" for="dur">Len</label></div>
+            <div class="vslider" data-tip="Temperature — how wild vs. safe the result is. Low = predictable and clean, high = adventurous and surprising. 1.3 is a good start."><span class="vval" id="tempV">1.30</span>
+              <span class="vtrack"><input type="range" id="temp" min="0.5" max="2.0" step="0.05" value="1.3" orient="vertical" aria-label="Temperature"></span>
+              <label class="vlbl" for="temp">Temp</label></div>
+            <div class="vslider" data-tip="Top-k — how many possible notes the model weighs at each step. Lower = focused, higher = more varied. 40 is typical."><span class="vval" id="tkV">40</span>
+              <span class="vtrack"><input type="range" id="tk" min="1" max="200" step="1" value="40" orient="vertical" aria-label="Top-k"></span>
+              <label class="vlbl" for="tk">Top-k</label></div>
+            <div class="vslider" data-tip="Style strength — how hard your prompt and genres steer the sound. Higher sticks closer to the description; too high can sound forced."><span class="vval" id="csV">3.0</span>
+              <span class="vtrack"><input type="range" id="cs" min="0" max="7" step="0.1" value="3.0" orient="vertical" aria-label="Style strength"></span>
+              <label class="vlbl" for="cs">Style</label></div>
+            <div class="vslider" data-tip="Melody strength — how strongly the notes you pick on the keyboard (Mix & Notes) steer the tune. 0 ignores them."><span class="vval" id="cnV">1.0</span>
+              <span class="vtrack"><input type="range" id="cn" min="0" max="7" step="0.1" value="1.0" orient="vertical" aria-label="Melody strength"></span>
+              <label class="vlbl" for="cn">Melody</label></div>
+            <div class="vslider" data-tip="Drum strength — how strongly the drum setting (Auto/On/Off) is enforced in the mix."><span class="vval" id="cdV">1.0</span>
+              <span class="vtrack"><input type="range" id="cd" min="0" max="7" step="0.1" value="1.0" orient="vertical" aria-label="Drum strength"></span>
+              <label class="vlbl" for="cd">Drums</label></div>
+            <div class="drumsblock" data-tip="Drum mode — Auto lets the model decide, On forces a drum track, Off removes drums entirely.">
+              <span class="vval" style="visibility:hidden">·</span>
+              <span class="vtrack"><div class="seg vert small" id="drumseg" role="group" aria-labelledby="drumlbl">
+                <button data-v="-1" class="on" type="button">Auto</button><button data-v="1" type="button">On</button><button data-v="0" type="button">Off</button>
+              </div></span>
+              <span class="vlbl" id="drumlbl">Drum mode</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mix & Notes -->
+        <div class="pane" id="pane-adv" role="tabpanel">
+          <div class="advscroll">
+            <div class="advcols">
+              <div class="advcol">
+                <div class="rowhead"><span class="lbl grow" data-tip="Style mix — blend extra ideas into your style. Add a text vibe or an audio clip, and set how much each one counts with its weight slider.">🎚 Style mix + audio <span class="cnt" id="mixCnt"></span></span></div>
+                <p class="hint2">Blend the prompt and stacked genres with more vibes or an uploaded clip.</p>
+                <div id="mixRows"></div>
+                <div class="mixadd">
+                  <button class="mini" id="addText" type="button" data-tip="Add another text vibe to blend in, e.g. 'warm strings'. The weight slider sets how strong it is.">+ Text vibe</button>
+                  <button class="mini" id="addAudio" type="button" data-tip="Upload a short audio clip to borrow its vibe. The model listens and blends that feel into your track.">🎵 Audio clip</button>
+                  <input type="file" id="audioFile" accept="audio/*" hidden>
+                </div>
+                <div class="rowhead" style="margin-top:6px"><label for="seed" class="lbl grow" data-tip="Seed — a number that locks how a prompt is interpreted. Same seed + same prompt = the same reading every time. Leave blank for a fresh take each run.">🌱 Style seed</label><span class="vval" id="seedV">random</span></div>
+                <div class="seedrow"><input type="number" id="seed" min="0" max="9999999" placeholder="random" aria-label="Style seed value" data-tip="Type a seed number, or hit the dice to lock a random one."><button class="mini" id="seedRand" type="button" data-tip="Lock a random seed.">🎲</button></div>
+              </div>
+              <div class="advcol">
+                <div class="octrow"><span class="lbl" id="octlbl" data-tip="Notes — tap piano keys to suggest pitches for the melody. Pick a few for a chord, or leave all off to let the model choose freely.">🎹 Notes · octave</span>
+                  <div class="seg small" id="octseg" role="group" aria-labelledby="octlbl" data-tip="Octave — which register the keys below cover. Higher numbers = higher pitch.">
+                    <button data-v="3" type="button">3</button><button data-v="4" type="button" class="on">4</button><button data-v="5" type="button">5</button><button data-v="6" type="button">6</button>
+                  </div>
+                  <button class="mini" id="notesClear" type="button" style="margin-left:auto" data-tip="Clear all selected notes.">Clear<span class="cnt" id="notesCnt"></span></button>
+                </div>
+                <p class="hint2">Tap pitches to steer the melody. Off when none are lit.</p>
+                <div class="keys" id="keys" data-tip="Tap pitches to steer the melody. Lit keys are suggested to the model; none lit = free choice."></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </details>
+    </section>
 
-    <div class="actions">
-      <button class="btn primary" id="go">▶ Generate</button>
-      <button class="btn sec" id="ext" disabled title="Continue the current piece without a cut. Change the prompt first to morph it.">＋ Extend</button>
-      <span class="meta" id="genmeta"></span>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="viztoolbar">
-      <div class="seg small" id="vizseg">
-        <button data-v="bars" class="on">Bars</button><button data-v="wave">Wave</button><button data-v="radial">Radial</button>
+    <!-- collapsible library -->
+    <aside class="library panel">
+      <div class="libhead">
+        <button class="libtgl" id="libtoggle" data-tip="Collapse or expand the Library to give the console more room." aria-label="Collapse library">⟩</button>
+        <span class="libttl" data-tip="Library — every track you make is listed here and saved to disk. Play it, rename it, reload its settings (⚙), or download it.">Library <span class="muted" id="histcount"></span></span>
+        <button class="mini" id="dlall" data-tip="Download every track in the list.">⤓</button>
+        <button class="mini" id="clear" data-tip="Clear the list. (Your saved .wav files stay on disk.)">Clear</button>
       </div>
-      <label class="vol">🔊<input type="range" id="vol" min="0" max="1" step="0.01" value="1"></label>
-      <label class="loop"><input type="checkbox" id="loop"> Loop</label>
-    </div>
-    <canvas id="viz" width="1024" height="190"></canvas>
-    <div class="np">
-      <audio id="player" controls></audio>
-      <a class="dl" id="dl" download>⤓ Download</a>
-    </div>
-    <div class="meta" id="nowmeta">Your music plays here and is saved to studio\output\.</div>
-  </section>
+      <div class="hist" id="hist"><div class="muted">Nothing yet. Hit Generate.</div></div>
+    </aside>
+  </main>
 
-  <details class="auto card" id="histPanel">
-    <summary>History</summary>
-    <div class="between" style="margin-top:6px">
-      <span class="muted" id="histcount"></span>
-      <div style="display:flex;gap:6px">
-        <button class="mini" id="dlall" title="Download all">⤓ All</button>
-        <button class="mini" id="clear" title="Clear list">Clear</button>
+  <footer class="controlbar">
+    <div class="cb-deck">
+      <div class="cb-group cb-left">
+        <button class="cb-btn" id="surprise" data-tip="Surprise me — drops a random prompt idea into the box to get you going."><span class="ic">🎲</span>Surprise</button>
+        <button class="cb-btn cb-play" id="playbtn" data-tip="Play or pause the current track."><span class="ic">▶</span><span class="lbl">PLAY</span></button>
+        <button class="cb-btn cb-toggle" id="loopbtn" data-tip="Loop — repeat the current track when it reaches the end."><span class="ic">↻</span>Loop</button>
+        <input type="checkbox" id="loop" hidden>
+      </div>
+      <span class="cb-status" id="genmeta"></span>
+      <div class="cb-group cb-right">
+        <button class="cb-btn cb-ext" id="ext" disabled data-tip="Extend — continue the current track seamlessly. Change the prompt first to morph it into something new without a cut."><span class="ic">＋</span>Extend</button>
+        <button class="cb-btn cb-go" id="go" data-tip="Generate — make a brand-new track from your prompt, genres and settings."><span class="ic">▶</span>Generate</button>
       </div>
     </div>
-    <div class="hist" id="hist"><div class="muted">Nothing yet. Hit Generate.</div></div>
-  </details>
-
-  <footer>Made by <b>GANTASMO</b></footer>
+  </footer>
 </div>
 
 <div id="ov"><div class="box">
   <div class="spinner" id="sp"></div>
   <div id="ovt" style="font-size:18px;font-weight:700">Waking up the musician…</div>
-  <div class="muted" id="ovs" style="margin-top:8px">Loading the model onto your GPU. First time takes ~30–60 seconds.</div>
+  <div class="muted" id="ovs" style="margin-top:8px">Loading the model onto your GPU. First time takes ~30-60 seconds.</div>
 </div></div>
 
 <div id="docs" role="dialog" aria-modal="true" aria-labelledby="docsTitle"><div class="dcard">
   <div class="dhead">
     <h2 id="docsTitle">📖 MRT2 Studio Docs</h2>
-    <button class="ghost x" id="docsclose" title="Close">✕ Close</button>
+    <button class="cbtn x" id="docsclose" title="Close">✕ Close</button>
   </div>
   <div class="dbody">
     <nav class="dnav">
@@ -241,30 +462,31 @@
     <h3 id="d-quickstart">Quickstart</h3>
     <p>MRT2 Studio generates an audio track from a text description using the <code>mrt2_small</code> model on the local GPU.</p>
     <ol>
-      <li>Enter a description in the prompt field at the top of the page.</li>
-      <li>Open <b>Sound controls</b> to set length and other parameters. The defaults suit most prompts.</li>
+      <li>On the <b>Compose</b> tab, enter a description and tap genre tags to stack weighted vibes. Click a tag's bars to quantize how strongly it counts.</li>
+      <li>On the <b>Sound</b> tab, set length and other parameters with the vertical faders. The defaults suit most prompts.</li>
+      <li>The <b>Mix &amp; Notes</b> tab blends extra style sources or audio, steers the melody by pitch, and locks a style seed.</li>
       <li>Press <b>Generate</b>. The first run after launch compiles the model and takes 30 to 60 seconds. Later runs are faster.</li>
-      <li>The track plays in the player and is written to <code>oneclick\studio\output\</code> as a WAV file.</li>
+      <li>The track plays in the waveform strip at the top and is written to <code>oneclick\studio\output\</code> as a WAV file. It also appears in the <b>Library</b> on the right.</li>
       <li>Press <b>Extend</b> to add audio to the current track. A changed prompt before Extend morphs the continuation into the new description without a cut.</li>
     </ol>
-    <p>Generated tracks also appear in the <b>History</b> panel and persist across reloads.</p>
 
     <h3 id="d-controls">Controls</h3>
     <table class="dtable">
       <tr><th>Control</th><th>Effect</th><th>Range</th><th>API field</th></tr>
-      <tr><td>Length</td><td>Track duration in seconds</td><td>4 to 180</td><td><code>duration</code></td></tr>
-      <tr><td>Temperature</td><td>Randomness of the output</td><td>0.5 to 2.0</td><td><code>temperature</code></td></tr>
+      <tr><td>Len</td><td>Track duration in seconds</td><td>4 to 180</td><td><code>duration</code></td></tr>
+      <tr><td>Temp</td><td>Randomness of the output</td><td>0.5 to 2.0</td><td><code>temperature</code></td></tr>
       <tr><td>Top-k</td><td>Candidate tokens sampled at each step</td><td>1 to 200</td><td><code>top_k</code></td></tr>
-      <tr><td>Style strength</td><td>Weight of the prompt on the result</td><td>0 to 7</td><td><code>cfg_musiccoca</code></td></tr>
-      <tr><td>Melody strength</td><td>Weight of melodic conditioning</td><td>0 to 7</td><td><code>cfg_notes</code></td></tr>
-      <tr><td>Drum strength</td><td>Weight of the drum track</td><td>0 to 7</td><td><code>cfg_drums</code></td></tr>
-      <tr><td>Drums</td><td>Drum presence</td><td>Auto, On, Off</td><td><code>drums</code> (-1, 1, 0)</td></tr>
+      <tr><td>Style</td><td>Weight of the prompt on the result</td><td>0 to 7</td><td><code>cfg_musiccoca</code></td></tr>
+      <tr><td>Melody</td><td>Weight of melodic conditioning</td><td>0 to 7</td><td><code>cfg_notes</code></td></tr>
+      <tr><td>Drums</td><td>Weight of the drum track</td><td>0 to 7</td><td><code>cfg_drums</code></td></tr>
+      <tr><td>Drum mode</td><td>Drum presence</td><td>Auto, On, Off</td><td><code>drums</code> (-1, 1, 0)</td></tr>
+      <tr><td>Genre weight</td><td>Quantized strength of a stacked genre in the style blend</td><td>1 to 4 steps</td><td><code>styles[].weight</code></td></tr>
     </table>
 
     <h3 id="d-shots">Screenshots</h3>
     <div class="dgrid">
-      <figure><img class="dshot" src="/docs/studio.png" alt="MRT2 Studio desktop layout"><figcaption>Desktop layout: prompt, sound controls, visualizer, and player.</figcaption></figure>
-      <figure><img class="dshot mob" src="/docs/studio-mobile.png" alt="MRT2 Studio mobile layout"><figcaption>Compact layout for one phone screen.</figcaption></figure>
+      <figure><img class="dshot" src="/docs/studio.png" alt="MRT2 Studio desktop layout"><figcaption>Desktop layout: waveform strip, tabbed console, and collapsible Library.</figcaption></figure>
+      <figure><img class="dshot mob" src="/docs/studio-mobile.png" alt="MRT2 Studio mobile layout"><figcaption>Stacked layout for a phone.</figcaption></figure>
     </div>
 
     <h3 id="d-api">API reference</h3>
@@ -293,6 +515,9 @@
       <tr><td><code>cfg_notes</code></td><td>number</td><td>1.0</td></tr>
       <tr><td><code>cfg_drums</code></td><td>number</td><td>1.0</td></tr>
       <tr><td><code>drums</code></td><td>-1, 1, 0</td><td>-1</td></tr>
+      <tr><td><code>styles</code></td><td>list of {type, text/audio_b64, weight}</td><td>none (uses prompt)</td></tr>
+      <tr><td><code>notes</code></td><td>MIDI numbers or 128-vector</td><td>none</td></tr>
+      <tr><td><code>seed</code></td><td>integer</td><td>0</td></tr>
     </table>
     <p>Response headers report timing and output details:</p>
     <table class="dtable">
@@ -334,43 +559,135 @@
 <script>
 const $ = s => document.querySelector(s);
 const fmtTime = s => { s=Math.round(+s); return s<60? s+"s" : Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
-let drumsMode=-1, vizMode="bars", ready=false;
 
-// ---- responsive: auto-expand panels on desktop, collapse on phones ----
-function applyResponsive(){ const big=innerWidth>640; document.querySelectorAll("details.auto").forEach(d=>{ d.open=big; }); }
-applyResponsive(); addEventListener("resize",applyResponsive);
+let drumsMode=-1, vizMode="bars", ready=false, loaded=false;
+let mixSources=[]; let noteSet=new Set(); let noteOct=4; let seedVal=null; let genres=new Map();
+const PCS=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-// ---- examples ----
-const EXAMPLES = ["dreamy lo-fi hip hop with rain on a window","slow rainy jazz piano at midnight",
-  "epic synthwave for a space chase","warm analog pads, no drums, floating","driving techno with a deep rolling bass",
-  "sunny bossa nova with nylon guitar","cinematic orchestral build, triumphant","funky 70s clavinet groove"];
-const chips=$("#chips"); EXAMPLES.forEach(t=>{const c=document.createElement("span");c.className="chip";c.textContent=t;c.onclick=()=>{$("#prompt").value=t;save();};chips.appendChild(c);});
+// ── size the shell to the live window (measured, not assumed) ──
+function setVH(){ document.documentElement.style.setProperty("--appvh", window.innerHeight+"px"); }
+setVH(); addEventListener("resize",setVH); addEventListener("orientationchange",()=>setTimeout(setVH,120));
 
-// ---- surprise ----
+// ── tabs ──
+document.querySelectorAll(".tab[data-pane]").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  const id="pane-"+t.dataset.pane;
+  document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",p.id===id));
+});
+// ── library collapse ──
+$("#libtoggle").onclick=()=>{ const a=document.getElementById("app"); const c=a.classList.toggle("lib-collapsed");
+  $("#libtoggle").textContent=c?"⟨":"⟩"; };
+
+// ── noob-friendly hover tooltips for every [data-tip] control ──
+const tipEl=document.createElement("div"); tipEl.id="tip"; tipEl.setAttribute("role","tooltip"); document.body.appendChild(tipEl);
+let tipTimer=null, tipFor=null;
+function placeTip(el){ const r=el.getBoundingClientRect(), t=tipEl.getBoundingClientRect();
+  let x=r.left+r.width/2-t.width/2, y=r.top-t.height-8;
+  if(y<6) y=r.bottom+8;
+  x=Math.max(8,Math.min(x,innerWidth-t.width-8));
+  tipEl.style.left=x+"px"; tipEl.style.top=y+"px"; }
+function showTip(el){ const txt=el.getAttribute("data-tip"); if(!txt)return; tipFor=el; tipEl.textContent=txt; tipEl.classList.add("on"); placeTip(el); }
+function hideTip(){ tipFor=null; tipEl.classList.remove("on"); }
+document.addEventListener("pointerover",e=>{ const el=e.target.closest&&e.target.closest("[data-tip]"); if(!el||el===tipFor)return;
+  clearTimeout(tipTimer); tipTimer=setTimeout(()=>showTip(el),200); });
+document.addEventListener("pointerout",e=>{ const el=e.target.closest&&e.target.closest("[data-tip]"); if(!el)return;
+  if(e.relatedTarget&&el.contains(e.relatedTarget))return; clearTimeout(tipTimer); hideTip(); });
+document.addEventListener("pointerdown",hideTip);
+document.addEventListener("focusin",e=>{ const el=e.target.closest&&e.target.closest("[data-tip]"); if(el) showTip(el); });
+document.addEventListener("focusout",hideTip);
+
+// ── genres: quantized weighted style stack ──
+const GENRES = [
+  ["Synthwave","neon synthwave, analog arps, gated-reverb drums, night-drive energy","Synthwave — retro 1980s electronic music: glowing analog synths, arpeggios and big gated drums. Neon night-drive mood."],
+  ["Lo-fi","dusty lo-fi hip hop, mellow Rhodes, vinyl crackle, lazy boom-bap drums","Lo-fi — relaxed, slightly dusty hip hop with mellow keys and vinyl crackle. The classic 'study beats' vibe."],
+  ["Phrygian / Greek","ancient Greek music in Phrygian mode, aulos and lyre, modal drones, hand percussion","Phrygian / Greek — ancient Greek modal music. The Phrygian scale sounds exotic and a little dark; adds reed pipes, lyre and hand drums."],
+  ["Gamelan","Balinese gamelan, interlocking bronze metallophones, deep gongs, shimmering tuning","Gamelan — Indonesian percussion orchestra of tuned bronze gongs and metallophones. Shimmering, interlocking, hypnotic."],
+  ["Vaporwave","slowed vaporwave, pitched-down 80s samples, lush chorus, hazy mall nostalgia","Vaporwave — slowed-down, chopped 80s/90s samples drenched in chorus and nostalgia. Dreamy, hazy 'mall music'."],
+  ["Vocaloid","hyper-modern J-pop with a bright vocaloid lead, glossy supersaws, tight programmed beats","Vocaloid — hyper-modern J-pop with a bright synthetic singing-robot lead, glossy synths and tight programmed beats."],
+  ["Vocoder Funk","70s funk with a formant robot vocoder lead, slap bass, clavinet stabs, horn hits","Vocoder Funk — 70s/80s funk with a robotic talk-box/vocoder lead voice, slap bass and clavinet. Think Zapp or Daft Punk."],
+  ["Complextro","complextro, glitchy detuned saw stabs, funky electro bass, intricate rapid-fire synth riffs","Complextro — a busy, glitchy strain of electro house built on rapid, intricate synth riffs and detuned 'talking' bass stabs."],
+  ["Future Bass","future bass, supersaw chords with pitch-bend swells, chopped vocals, trap-style hats, big drop","Future Bass — bright, emotional EDM with detuned supersaw chords that swell and bend, chopped vocals and a punchy drop."],
+  ["Glitch Hop","glitch hop, crunchy chopped breaks, heavy funk bass, stutter edits, mid-tempo swing","Glitch Hop — mid-tempo funk built from chopped, stuttered, bit-crushed beats and fat bass. Headnod groove with digital glitch detail."],
+  ["Drum & Bass","rolling drum and bass, chopped breakbeats, deep sub bass, atmospheric pads","Drum & Bass — fast (around 170 bpm) UK electronic music with chopped breakbeats and deep sub bass."],
+  ["Ragga Jungle","ragga jungle, chopped amen breaks, deep reggae sub bass, air-horn stabs","Ragga Jungle — frantic 90s breakbeats with reggae and dancehall vocals over heavy sub bass."],
+  ["Hardstyle Dub","dubstep that flips into double-time hardstyle drops, distorted reese bass, half-time then pounding hard kicks, screeching leads","Hardstyle Dubstep — heavy dubstep that flips into double-time hardstyle drops: distorted kicks, screeching reese bass and aggressive energy."],
+  ["Trap","modern trap, booming 808s, crisp triplet hi-hats, dark minor melody","Trap — modern hip hop with booming 808 bass, rattling triplet hi-hats and dark melodies."],
+  ["Hyperpop","hyperpop, glitchy pitch-shifted vocals, distorted 808s, candy-bright synths","Hyperpop — maximalist, glitchy internet pop: pitched-up vocals, distorted 808s and candy-bright synths."],
+  ["Future Garage","future garage, swung 2-step drums, sub bass, blurred vocal chops, rain","Future Garage — moody UK electronic music: shuffled 2-step drums, sub bass, blurred vocal chops and rain."],
+  ["Tech Death","technical death metal, hyper-fast double-bass, blast beats, gravity blasts, stop-and-go blast sections, dissonant sweeping guitars","Technical Death Metal — extreme, virtuosic metal: machine-gun double-bass, blast beats and gravity blasts, abrupt stop-start hits and dissonant shredding."],
+  ["Darkwave","darkwave, brooding analog bass, icy reverb, melancholic minor-key synths","Darkwave — gloomy, gothic synth-pop: cold reverb, brooding bass and melancholic minor-key melodies."],
+  ["Dungeon Synth","dungeon synth, dark medieval pads, haunting recorder, dripping cave reverb","Dungeon Synth — lo-fi medieval/fantasy ambient: dark pads, recorder melodies and dungeon reverb. Like an old RPG soundtrack."],
+  ["Ambient","weightless ambient, slowly evolving drones, granular textures, no drums","Ambient — slow, drifting, drumless soundscapes for atmosphere and focus. Pure mood, no beat."],
+  ["Cinematic","cinematic orchestral build, soaring strings, taiko hits, triumphant brass","Cinematic — epic film-score orchestra: soaring strings, big drums and triumphant brass. Movie-trailer energy."],
+  ["Dark Romanticism","dark romantic-era orchestra in the spirit of Mussorgsky, ominous low brass, brooding modal themes, grand cathartic swells","Dark Romanticism — brooding 1800s orchestral music in the spirit of Mussorgsky's 'Night on Bald Mountain': ominous brass, modal menace and grand swells."],
+  ["Piano Virtuoso","neoclassical piano virtuoso, fast cascading runs, dramatic dynamics, romantic-era solo concert piano","Neoclassical Virtuoso — dazzling solo concert piano with fast cascading runs and big dramatic dynamics, romantic-era style."],
+  ["Baroque","baroque harpsichord and strings, ornamented counterpoint, intimate chamber room","Baroque — ornate 1600s-1700s classical music: harpsichord and strings with interweaving counterpoint. Think Bach or Vivaldi."],
+  ["Ragtime","ragtime piano, syncopated stride left hand, jaunty saloon melody, early 1900s","Ragtime — bouncy, syncopated solo piano from the early 1900s (think Scott Joplin). Jaunty, old-timey saloon feel."],
+  ["Flamenco Guitar","flamenco and classical guitar, rapid rasgueado strumming, Phrygian falsetas, palmas hand-claps, passionate rubato","Flamenco / Classical Guitar — fiery Spanish nylon-string guitar: fast strums, ornamented runs and hand-claps, passionate and expressive."],
+  ["Vocoder Doo-wop","robotic vocoder neo-doo-wop, 50s doo-wop chord changes and close harmonies sung through a robot vocoder, finger-snaps, upright bass","Robot Doo-wop — 1950s doo-wop harmonies and chord changes sung through a robotic vocoder. Retro-future and charming."],
+  ["Afrobeat","afrobeat groove, polyrhythmic percussion, tight horn section, electric guitar","Afrobeat — West African groove with layered polyrhythmic percussion, tight horns and funky guitar. Think Fela Kuti."],
+  ["Klezmer","klezmer, expressive clarinet in freygish mode, accordion, dancing violin","Klezmer — Eastern-European Jewish folk music: expressive clarinet, accordion and violin in the exotic freygish scale."],
+  ["Khoomei","Tuvan khoomei overtone throat singing, one voice splitting into a whistling harmonic melody over a low drone, igil fiddle","Khoomei — Tuvan throat singing where one singer holds a deep drone and a whistling overtone melody at the same time. Haunting and otherworldly."],
+  ["Throat / Steppe","Central Asian steppe music, deep throat-singing drones, igil horsehair fiddle, vast open-steppe space","Throat / Steppe — Central-Asian nomad music: deep throat-singing drones, horsehair fiddle and a vast, open, open-steppe atmosphere."],
+  ["Native American","Native American wooden flute and frame drums, pentatonic melodies, open-plains reverb, ceremonial chant","Native American — wooden flute and frame-drum music with pentatonic melodies and a wide, open, ceremonial atmosphere."],
+];
+const GENRE_FRAG=Object.fromEntries(GENRES.map(([n,f])=>[n,f]));
+const genWeight=lvl=>lvl/4;
+const palette=$("#palette");
+GENRES.forEach(([name,frag,tip])=>{
+  const b=document.createElement("button"); b.type="button"; b.className="gbtn"; b.textContent=name;
+  b.setAttribute("data-tip", tip||frag); b.dataset.name=name; b.onclick=()=>toggleGenre(name,b); palette.appendChild(b);
+});
+function paletteBtn(name){ return palette.querySelector('[data-name="'+name.replace(/"/g,'\\"')+'"]'); }
+function toggleGenre(name,btn){
+  if(genres.has(name)){ genres.delete(name); btn&&btn.classList.remove("on"); }
+  else { genres.set(name,4); btn&&btn.classList.add("on"); }
+  renderGenStack(); save();
+}
+function renderGenStack(){
+  const box=$("#genstack"); box.innerHTML="";
+  if(!genres.size){ box.innerHTML='<span class="muted gx">No genres stacked — tap a tag above.</span>'; $("#genCnt").textContent=""; return; }
+  $("#genCnt").textContent="· "+genres.size;
+  genres.forEach((level,name)=>{
+    const tag=document.createElement("span"); tag.className="gtag";
+    const nm=document.createElement("span"); nm.className="gnm"; nm.textContent=name;
+    const lv=document.createElement("span"); lv.className="glv";
+    lv.setAttribute("data-tip","Quantize this genre's weight ("+level+"/4). Click a bar to set how strongly it counts in the blend — fewer bars = subtler, 4 bars = full.");
+    for(let i=1;i<=4;i++){ const c=document.createElement("i"); if(i<=level)c.className="lit";
+      c.onclick=()=>{ genres.set(name,i); renderGenStack(); save(); }; lv.appendChild(c); }
+    const rm=document.createElement("button"); rm.type="button"; rm.className="grm"; rm.textContent="✕";
+    rm.onclick=()=>{ genres.delete(name); const pb=paletteBtn(name); pb&&pb.classList.remove("on"); renderGenStack(); save(); };
+    tag.append(nm,lv,rm); box.appendChild(tag);
+  });
+}
+renderGenStack();
+
+// ── surprise ──
 const A=["dreamy","gritty","cinematic","lo-fi","epic","melancholic","hypnotic","sunlit","midnight","neon","dusty","ethereal"];
 const B=["synthwave","jazz","techno","ambient","bossa nova","orchestral","house","trip-hop","funk","darkwave","drum & bass","folk"];
 const C=["with a fat bassline","with rain and vinyl crackle","with soaring strings","with a hypnotic arpeggio","no drums, floating","with brushed drums","with warm analog pads","with a haunting piano","with shimmering bells","with a driving groove"];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 $("#surprise").onclick=()=>{$("#prompt").value=`${pick(A)} ${pick(B)} ${pick(C)}`;save();};
 
-// ---- sliders ----
+// ── sliders ──
 const bind=(id,vid,fmt)=>{const el=$(id),v=$(vid);const u=()=>{v.textContent=fmt(el.value);save();};el.oninput=u;u();};
 bind("#dur","#durV",x=>fmtTime(x)); bind("#temp","#tempV",x=>(+x).toFixed(2)); bind("#tk","#tkV",x=>x);
 bind("#cs","#csV",x=>(+x).toFixed(1)); bind("#cn","#cnV",x=>(+x).toFixed(1)); bind("#cd","#cdV",x=>(+x).toFixed(1));
 
-// ---- segmented controls ----
+// ── segmented controls ──
 $("#drumseg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   drumsMode=+b.dataset.v; [...$("#drumseg").children].forEach(x=>x.classList.toggle("on",x===b)); save();});
 $("#vizseg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   vizMode=b.dataset.v; [...$("#vizseg").children].forEach(x=>x.classList.toggle("on",x===b)); save();});
 
-// ---- settings persistence ----
+// ── settings persistence ──
 function readSettings(){return{
   prompt:$("#prompt").value.trim()||"warm analog pads", duration:+$("#dur").value,
   temperature:+$("#temp").value, top_k:+$("#tk").value, cfg_musiccoca:+$("#cs").value,
   cfg_notes:+$("#cn").value, cfg_drums:+$("#cd").value, drums:drumsMode };}
-function save(){ try{ localStorage.setItem("mrt2", JSON.stringify({
-  ...readSettings(), vizMode, vol:+$("#vol").value, loop:$("#loop").checked })); }catch(e){} }
+function save(){ if(!loaded) return; try{ localStorage.setItem("mrt2", JSON.stringify({
+  ...readSettings(), vizMode, vol:+$("#vol").value, loop:$("#loop").checked,
+  genres:[...genres.entries()], seed:seedVal })); }catch(e){} }
 function applyTo(s){ const set=(id,v)=>{ if(v!=null&&$(id)){$(id).value=v; $(id).dispatchEvent(new Event("input"));} };
   if(s.prompt)$("#prompt").value=s.prompt;
   set("#dur",s.duration);set("#temp",s.temperature);set("#tk",s.top_k);set("#cs",s.cfg_musiccoca);set("#cn",s.cfg_notes);set("#cd",s.cfg_drums);
@@ -379,9 +696,84 @@ function restore(){ let s; try{ s=JSON.parse(localStorage.getItem("mrt2")||"null
   applyTo(s);
   if(s.vizMode){vizMode=s.vizMode;[...$("#vizseg").children].forEach(x=>x.classList.toggle("on",x.dataset.v===vizMode));}
   if(s.vol!=null)$("#vol").value=s.vol;
-  if(s.loop!=null){$("#loop").checked=s.loop;$("#player").loop=s.loop;} }
+  if(s.loop!=null){$("#loop").checked=s.loop;$("#player").loop=s.loop;$("#loopbtn").classList.toggle("on",s.loop);}
+  if(Array.isArray(s.genres)){ genres=new Map(s.genres); genres.forEach((l,name)=>{const pb=paletteBtn(name);pb&&pb.classList.add("on");}); renderGenStack(); }
+  if(s.seed!=null){ seedVal=s.seed; $("#seed").value=s.seed; $("#seedV").textContent=s.seed; } }
 
-// ---- IndexedDB: persist generated tracks (replay across reloads) ----
+// ── style mix ──
+function renderMix(){
+  const box=$("#mixRows"); box.innerHTML="";
+  mixSources.forEach((s,i)=>{
+    const row=document.createElement("div"); row.className="mixrow";
+    const src=document.createElement("div"); src.className="src";
+    if(s.type==='audio'){
+      src.innerHTML=`<span class="tag">🎵 clip</span><span class="txt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.name||'audio').replace(/[<>]/g,'')}</span>`;
+    }else{
+      const inp=document.createElement("input"); inp.className="txt"; inp.type="text";
+      inp.placeholder="another vibe, e.g. warm strings"; inp.value=s.text||""; inp.setAttribute("aria-label","Extra style vibe");
+      inp.oninput=()=>{ s.text=inp.value; }; src.appendChild(inp);
+    }
+    const w=document.createElement("div"); w.className="w";
+    const wi=document.createElement("input"); wi.type="range"; wi.min="0"; wi.max="100"; wi.step="1";
+    wi.value=Math.round((s.weight??1)*100); wi.setAttribute("aria-label","Weight");
+    const wv=document.createElement("div"); wv.className="wv"; wv.textContent=wi.value+"%";
+    wi.oninput=()=>{ s.weight=+wi.value/100; wv.textContent=wi.value+"%"; };
+    w.appendChild(wi); w.appendChild(wv);
+    const rm=document.createElement("button"); rm.className="rm"; rm.type="button"; rm.textContent="✕"; rm.setAttribute("aria-label","Remove");
+    rm.onclick=()=>{ mixSources.splice(i,1); renderMix(); };
+    row.appendChild(src); row.appendChild(w); row.appendChild(rm); box.appendChild(row);
+  });
+  $("#mixCnt").textContent = mixSources.length ? "· "+mixSources.length : "";
+}
+$("#addText").onclick=()=>{ mixSources.push({type:'text',text:'',weight:0.5}); renderMix(); };
+$("#addAudio").onclick=()=>$("#audioFile").click();
+$("#audioFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{ const b64=String(rd.result).split(',')[1]||""; mixSources.push({type:'audio',audio_b64:b64,name:f.name,weight:0.6}); renderMix(); };
+  rd.readAsDataURL(f); e.target.value=""; };
+
+// ── notes / chord ──
+function renderKeys(){
+  const box=$("#keys"); box.innerHTML="";
+  PCS.forEach((pc,pcIdx)=>{
+    const midi=12*(noteOct+1)+pcIdx;
+    const k=document.createElement("div");
+    k.className="key"+(pc.includes("#")?" sharp":"")+(noteSet.has(midi)?" on":"");
+    k.textContent=pc; k.title="MIDI "+midi;
+    k.onclick=()=>{ noteSet.has(midi)?noteSet.delete(midi):noteSet.add(midi); k.classList.toggle("on"); updNotes(); };
+    box.appendChild(k);
+  });
+}
+function updNotes(){ $("#notesCnt").textContent = noteSet.size ? " · "+noteSet.size : ""; }
+$("#octseg").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  noteOct=+b.dataset.v; [...$("#octseg").children].forEach(x=>x.classList.toggle("on",x===b)); renderKeys(); });
+$("#notesClear").onclick=()=>{ noteSet.clear(); renderKeys(); updNotes(); };
+
+// ── seed ──
+$("#seed").addEventListener("input",()=>{ const v=$("#seed").value.trim(); seedVal=(v===""?null:+v);
+  $("#seedV").textContent=(seedVal==null?"random":seedVal); save(); });
+$("#seedRand").onclick=()=>{ seedVal=Math.floor(Math.random()*1000000); $("#seed").value=seedVal; $("#seedV").textContent=seedVal; save(); };
+
+// ── request body = settings + genre stack + advanced conditioning ──
+function buildBody(){
+  const b=readSettings();
+  const genreSrcs=[...genres.entries()].map(([name,lvl])=>({type:'text',text:GENRE_FRAG[name],weight:genWeight(lvl)}));
+  const mixExtras=mixSources.filter(s => (s.type==='audio'&&s.audio_b64) || (s.type==='text'&&(s.text||'').trim()))
+    .map(s => s.type==='audio' ? {type:'audio',audio_b64:s.audio_b64,weight:s.weight??1}
+                               : {type:'text',text:s.text.trim(),weight:s.weight??1});
+  if(genreSrcs.length||mixExtras.length){
+    const styles=[];
+    if($("#prompt").value.trim()) styles.push({type:'text',text:$("#prompt").value.trim(),weight:1.0});
+    styles.push(...genreSrcs,...mixExtras);
+    b.styles=styles;
+  }
+  if(noteSet.size) b.notes=[...noteSet];
+  if(seedVal!=null) b.seed=seedVal;
+  return b;
+}
+renderKeys();
+
+// ── IndexedDB: persist generated tracks ──
 let db=null;
 function idbOpen(){return new Promise(res=>{ let r; try{ r=indexedDB.open("mrt2studio",1); }catch(e){return res(null);}
   r.onupgradeneeded=()=>{ try{ r.result.createObjectStore("tracks",{keyPath:"id"}); }catch(e){} };
@@ -393,9 +785,7 @@ function idbClear(){ if(!db)return; try{ db.transaction("tracks","readwrite").ob
 function idbAll(){return new Promise(res=>{ if(!db)return res([]); try{ const rq=db.transaction("tracks").objectStore("tracks").getAll();
   rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>res([]); }catch(e){res([]);} });}
 
-// ---- health / overlay ----
-// Never leave the user on an endless spinner or a raw stack trace: when the
-// engine errors or stops responding, swap the overlay to a clear, navigable fix.
+// ── health / overlay ──
 let offlineStreak=0;
 const FIX_STEPS = 'Close this tab and double-click <b>MRT2-Studio</b> again to restart the engine. '
   + 'If that doesn’t help, re-run <b>Setup-MRT2.bat</b> from the folder you unzipped. It repairs '
@@ -420,19 +810,18 @@ async function poll(){
     if(!h.ready){ $("#sp").style.display=""; $("#ovt").innerHTML="Waking up the musician…"; $("#ovs").textContent=h.status; }
   }catch(e){
     $("#stat").textContent="server offline"; $("#dot").className="dot err"; offlineStreak++;
-    if(!ready && offlineStreak>=6){                 // ~12s with no engine at all
+    if(!ready && offlineStreak>=6){
       showEngineProblem("Can’t reach the music engine",
         "The engine isn’t responding. It may still be starting, or setup didn’t finish.");
-    } else if(ready && offlineStreak>=4){            // we had it, then lost it
+    } else if(ready && offlineStreak>=4){
       ready=false; $("#go").disabled=true;
-      showEngineProblem("Lost connection to the engine",
-        "The engine stopped responding.");
+      showEngineProblem("Lost connection to the engine", "The engine stopped responding.");
     }
   }
 }
 $("#go").disabled=true; poll(); setInterval(poll,2000);
 
-// ---- docs panel ----
+// ── docs ──
 const docsEl=$("#docs");
 function openDocs(){ docsEl.classList.add("show"); docsEl.querySelector(".dbody").scrollTop=0; }
 function closeDocs(){ docsEl.classList.remove("show"); }
@@ -441,7 +830,7 @@ $("#docsclose").onclick=closeDocs;
 docsEl.addEventListener("click",e=>{ if(e.target===docsEl) closeDocs(); });
 addEventListener("keydown",e=>{ if(e.key==="Escape"&&docsEl.classList.contains("show")) closeDocs(); });
 
-// ---- visualizer ----
+// ── visualizer ──
 const cvs=$("#viz"), cx=cvs.getContext("2d"); let actx,analyser,gain,freq,timeArr;
 function initViz(){
   if(actx) return;
@@ -451,15 +840,42 @@ function initViz(){
   analyser=actx.createAnalyser(); analyser.fftSize=1024;
   freq=new Uint8Array(analyser.frequencyBinCount); timeArr=new Uint8Array(analyser.fftSize);
   src.connect(gain); gain.connect(analyser); analyser.connect(actx.destination);
-  draw();
 }
 $("#vol").oninput=()=>{ if(gain)gain.gain.value=+$("#vol").value; save(); };
 $("#loop").onchange=()=>{ $("#player").loop=$("#loop").checked; save(); };
+// control-bar transport
+$("#loopbtn").onclick=()=>{ const c=$("#loop"); c.checked=!c.checked; $("#loopbtn").classList.toggle("on",c.checked); c.dispatchEvent(new Event("change")); };
+const playBtn=$("#playbtn");
+function syncPlayBtn(){ const p=$("#player"), playing=!p.paused&&!p.ended;
+  playBtn.classList.toggle("playing",playing);
+  playBtn.querySelector(".ic").textContent=playing?"⏸":"▶";
+  playBtn.querySelector(".lbl").textContent=playing?"STOP":"PLAY"; }
+playBtn.onclick=()=>{ const p=$("#player"); if(p.paused){ initViz(); if(actx&&actx.state==="suspended")actx.resume(); p.play().catch(()=>{}); } else p.pause(); };
+$("#player").addEventListener("play",syncPlayBtn); $("#player").addEventListener("pause",syncPlayBtn); $("#player").addEventListener("ended",syncPlayBtn);
 function grad(x0,y0,x1,y1){const g=cx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,"#21d4fd");g.addColorStop(1,"#7c5cff");return g;}
+let idlePhase=0;
+function drawIdle(W,H){
+  idlePhase+=0.02;
+  const n=Math.max(48,Math.floor(W/16)),bw=W/n;
+  for(let i=0;i<n;i++){
+    const env=0.30+0.70*Math.sin(i/n*Math.PI);
+    const v=(0.10+0.34*(Math.sin(idlePhase*1.25+i*0.5)*0.5+0.5))*env;
+    const h=v*H; cx.globalAlpha=.5; cx.fillStyle=grad(0,H,0,H-h); cx.fillRect(i*bw+bw*0.16,H-h,bw*0.68,h);
+  }
+  cx.globalAlpha=1;
+  cx.fillStyle="rgba(170,180,225,.34)"; cx.font="600 "+Math.max(11,Math.round(H*0.10))+"px ui-monospace,Consolas,monospace";
+  cx.textAlign="center"; cx.fillText("◍  READY — PRESS GENERATE", W/2, H*0.55);
+}
+function fitCanvas(){
+  const r=cvs.getBoundingClientRect(); const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(w&&h&&(cvs.width!==w||cvs.height!==h)){ cvs.width=w; cvs.height=h; }
+}
 function draw(){
   requestAnimationFrame(draw);
+  fitCanvas();
   const W=cvs.width,H=cvs.height; cx.clearRect(0,0,W,H);
-  if(!analyser) return;
+  if(!analyser){ drawIdle(W,H); return; }
   if(vizMode==="wave"){
     analyser.getByteTimeDomainData(timeArr);
     cx.lineWidth=2.5; cx.strokeStyle=grad(0,0,W,0); cx.beginPath();
@@ -474,15 +890,15 @@ function draw(){
       cx.moveTo(cxp+Math.cos(a)*R,cyp+Math.sin(a)*R); cx.lineTo(cxp+Math.cos(a)*len,cyp+Math.sin(a)*len); cx.stroke();}
   } else {
     analyser.getByteFrequencyData(freq);
-    const n=84,step=Math.floor(freq.length/n),bw=W/n;
+    const n=96,step=Math.floor(freq.length/n),bw=W/n;
     for(let i=0;i<n;i++){const v=freq[i*step]/255,h=Math.pow(v,1.4)*H;
       cx.fillStyle=grad(0,H,0,H-h); cx.fillRect(i*bw+1,H-h,bw-2,h);}
   }
 }
 
-// ---- history ----
+// ── history / library ──
 const hist=$("#hist"); let items=[], current=null;
-function refreshCount(){ $("#histcount").textContent = items.length ? (items.length+(items.length>1?" tracks":" track")) : ""; }
+function refreshCount(){ const n=items.length; $("#histcount").textContent=n?("· "+n):""; }
 function setNow(rec){ $("#player").src=rec.url; $("#dl").href=rec.url; $("#dl").download=rec.file;
   $("#nowmeta").textContent=`“${rec.prompt}” · ${fmtTime(rec.dur)}${rec.segs>1?` (${rec.segs} parts)`:""}, ${(+rec.rtf).toFixed(1)}× real-time`; }
 function playRec(rec,seekTo){
@@ -512,11 +928,11 @@ $("#clear").onclick=()=>{ if(items.length&&!confirm("Clear the history list? (Sa
   items.forEach(r=>r.url&&URL.revokeObjectURL(r.url)); items=[]; current=null; $("#ext").disabled=true; idbClear();
   hist.innerHTML='<div class="muted">Nothing yet. Hit Generate.</div>'; refreshCount(); };
 
-// ---- generate / extend ----
+// ── generate / extend ──
 let busy=false;
 async function run(mode){
   if(busy||!ready) return;
-  const body=readSettings(); busy=true;
+  const body=buildBody(); busy=true;
   $("#go").disabled=true; $("#ext").disabled=true; $("#dot").className="dot busy";
   $("#stat").textContent=mode==="extend"?"extending…":"generating…";
   $("#genmeta").textContent=mode==="extend"?"continuing on the GPU…":"composing on the GPU…";
@@ -547,17 +963,17 @@ async function run(mode){
 $("#go").onclick=()=>run("new");
 $("#ext").onclick=()=>run("extend");
 
-// keyboard: Ctrl/Cmd+Enter generate, +Shift extend, Space play/pause
 $("#prompt").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); (e.shiftKey?$("#ext"):$("#go")).click(); }});
 document.addEventListener("keydown",e=>{ if(e.code==="Space"&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); const p=$("#player"); p.paused?p.play().catch(()=>{}):p.pause(); }});
 
-// quit
 $("#quit").onclick=async()=>{ if(!confirm("Stop the MRT2 engine? Re-launch MRT2-Studio to start again."))return;
   try{await fetch("/shutdown",{method:"POST"});}catch(e){} $("#ov").style.display="flex";
   $("#ovt").textContent="Engine stopped."; $("#ovs").textContent="Double-click MRT2-Studio to start again."; $("#sp").style.display="none"; };
 
-// ---- boot ----
+// ── boot ──
 restore();
+loaded=true;
+draw();
 (async()=>{ db=await idbOpen(); const saved=(await idbAll()).sort((a,b)=>(b.ts||0)-(a.ts||0));
   saved.forEach(s=>{ const url=URL.createObjectURL(s.blob); appendHistory({...s,url}); }); })();
 </script>
