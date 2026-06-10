@@ -11,6 +11,7 @@ fail(){ echo "MRT2_SETUP_FAILED: $*"; exit 1; }
 WORK="$HOME/mrt2"; VENV="$WORK/.venv"; PY="$VENV/bin/python"; MRT="$VENV/bin/mrt"
 ASSETS="$HOME/Documents/Magenta/magenta-rt-v2"
 CKPT="$ASSETS/checkpoints/mrt2_small.safetensors"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # for deps_doctor.sh (sibling)
 mkdir -p "$WORK"
 
 # --- 0. GPU passthrough sanity (warn, don't fail; CPU still imports) ----------
@@ -51,8 +52,8 @@ PY
 if deps_ok; then
   say "python deps already present"
 else
-  say "installing python deps (magenta-rt, jax[cuda12], numpy, soundfile), large download, please wait"
-  "$UV" pip install --python "$PY" "magenta-rt==2.0.2" "jax[cuda12]==0.10.1" "numpy==2.3.5" "soundfile==0.14.0" || \
+  say "installing the latest engine stack (magenta-rt, jax[cuda12], numpy, soundfile), large download, please wait"
+  "$UV" pip install --python "$PY" -U "magenta-rt" "jax[cuda12]" "numpy" "soundfile" || \
     fail "pip install failed (check internet connection and disk space)"
   deps_ok || fail "deps still missing after install"
 fi
@@ -72,15 +73,10 @@ else
 fi
 [ -f "$CKPT" ] || fail "checkpoint missing after download"
 
-# --- 5. verify -----------------------------------------------------------------
-say "verifying engine…"
-"$PY" - <<'PY' || exit 1
-import jax, os, soundfile, numpy, magenta_rt   # noqa
-print("[mrt2-setup] jax backend:", jax.default_backend(), "| devices:", jax.devices())
-ck = os.path.expanduser("~/Documents/Magenta/magenta-rt-v2/checkpoints/mrt2_small.safetensors")
-assert os.path.exists(ck), "checkpoint missing"
-print("[mrt2-setup] imports + checkpoint OK")
-PY
-[ $? -eq 0 ] || fail "verification failed"
+# --- 5. verify on the GPU (real generation) and self-heal the deps if needed ---
+# The doctor verifies a real generation and, only if the freshly installed stack
+# fails, restores the known-good floor. Keeps installs on the newest working set.
+say "verifying the engine on your GPU (loads the model once)…"
+bash "$HERE/deps_doctor.sh" "$VENV" || fail "engine verification failed (see messages above)"
 
 echo "MRT2_SETUP_OK"
