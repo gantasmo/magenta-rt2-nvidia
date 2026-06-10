@@ -54,6 +54,69 @@ function Test-Admin(){
   return (New-Object Security.Principal.WindowsPrincipal($id)).IsInRole(
             [Security.Principal.WindowsBuiltInRole]::Administrator)
 }
+# Record which WSL distro we used so MRT2-Studio.vbs targets the same one
+# (don't let the launcher hardcode "Ubuntu" when the user's distro differs).
+function Write-DistroMarker($name){
+  if(-not $studioVbs -or -not $name){ return }
+  try{
+    $studioDir = Split-Path -Parent $studioVbs
+    Set-Content -LiteralPath (Join-Path $studioDir '.wsl_distro') -Value $name -Encoding ASCII -NoNewline
+  }catch{ }
+}
+
+# --------------------------------------------------------------------------- #
+#  Auto-size %UserProfile%\.wslconfig to THIS machine, on ANY machine.
+#  A hand-edited or stale .wslconfig (e.g. processors greater than the host's
+#  logical CPUs, or memory set to ~100% of RAM) makes WSL print warnings,
+#  ignore the value, and can stall the whole system mid-generation. We force
+#  three safe, hardware-derived values and preserve everything else the user
+#  may have set. Returns a result object, or $null on failure.
+# --------------------------------------------------------------------------- #
+function Set-WslConfig(){
+  try{
+    $cs      = Get-CimInstance Win32_ComputerSystem -ErrorAction Stop
+    $logical = [int]$cs.NumberOfLogicalProcessors; if($logical -lt 1){ $logical = 1 }
+    $totalGB = [int][math]::Floor([double]$cs.TotalPhysicalMemory / 1GB)
+    if($totalGB -lt 2){ $totalGB = 2 }
+    $memGB   = [int][math]::Max(2, [math]::Floor($totalGB * 0.75))   # leave Windows ~25%
+    $swapGB  = [int][math]::Max(2, [math]::Round($memGB * 0.25))     # cushion vs OOM
+    # Desired [wsl2] keys (order preserved).
+    $want = [ordered]@{ processors = "$logical"; memory = "${memGB}GB"; swap = "${swapGB}GB" }
+
+    $cfg   = Join-Path $env:USERPROFILE '.wslconfig'
+    $lines = @()
+    if(Test-Path $cfg){ $lines = @(Get-Content -LiteralPath $cfg) }
+    $before = ($lines -join "`n")
+
+    $out = New-Object System.Collections.Generic.List[string]
+    $inWsl2 = $false; $hasWsl2 = $false; $seen = @{}
+    foreach($k in $want.Keys){ $seen[$k] = $false }
+    foreach($ln in $lines){
+      $t = $ln.Trim()
+      if($t -match '^\[(.+)\]$'){
+        if($inWsl2){ foreach($k in $want.Keys){ if(-not $seen[$k]){ $out.Add("$k=$($want[$k])"); $seen[$k]=$true } } }
+        $inWsl2 = ($matches[1] -ieq 'wsl2'); if($inWsl2){ $hasWsl2 = $true }
+        $out.Add($ln); continue
+      }
+      if($inWsl2 -and $t -match '^\s*([A-Za-z0-9_]+)\s*='){
+        $key = $matches[1]
+        if($want.Contains($key)){ $out.Add("$key=$($want[$key])"); $seen[$key]=$true; continue }
+      }
+      $out.Add($ln)
+    }
+    if($inWsl2){ foreach($k in $want.Keys){ if(-not $seen[$k]){ $out.Add("$k=$($want[$k])"); $seen[$k]=$true } } }
+    if(-not $hasWsl2){
+      if($out.Count -gt 0 -and $out[$out.Count-1].Trim() -ne ''){ $out.Add('') }
+      $out.Add('[wsl2]')
+      foreach($k in $want.Keys){ $out.Add("$k=$($want[$k])") }
+    }
+
+    $after   = ($out -join "`n")
+    $changed = ($after -ne $before)
+    if($changed){ Set-Content -LiteralPath $cfg -Value $out -Encoding ASCII }
+    return [pscustomobject]@{ Path=$cfg; Processors=$logical; Memory="${memGB}GB"; Swap="${swapGB}GB"; Changed=$changed }
+  }catch{ return $null }
+}
 
 Clear-Host
 Write-Host ""
@@ -74,6 +137,13 @@ $build = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVers
 if($build -ge 19041){ OK "Windows build $build (supports WSL2)" }
 else{ BAD "Windows build $build is too old for WSL2 (need 19041+). Update Windows."; [void]$blockers.Add("Update Windows to a recent version (Settings > Windows Update).") }
 
+# --- Right-size WSL to THIS machine (fixes bad/oversized processors+memory) ---
+$wc = Set-WslConfig
+if($wc){
+  if($wc.Changed){ WARN "Tuned WSL to your hardware: $($wc.Processors) CPUs, $($wc.Memory) RAM, $($wc.Swap) swap (corrected unsafe values)." }
+  else{ OK "WSL is already sized to your hardware ($($wc.Processors) CPUs, $($wc.Memory) RAM)." }
+}
+
 # --- WSL present? ---
 $wslCmd = Get-Command wsl.exe -ErrorAction SilentlyContinue
 $wslOk = $false; $ubuntuOk = $false; $ubuntuName = 'Ubuntu'
@@ -81,11 +151,17 @@ if($wslCmd){
   $wslOk = $true; OK "WSL is installed"
   $distros = (& wsl.exe -l -q) 2>$null | ForEach-Object { ($_ -replace "`0","").Trim() } | Where-Object { $_ -ne '' }
   $ub = $distros | Where-Object { $_ -match 'Ubuntu' } | Select-Object -First 1
-  if($ub){ $ubuntuOk = $true; $ubuntuName = $ub; OK "Ubuntu distro found: $ub" }
+  if($ub){ $ubuntuOk = $true; $ubuntuName = $ub; OK "Ubuntu distro found: $ub"; Write-DistroMarker $ubuntuName }
   else{ WARN "WSL is present but no Ubuntu distro is installed"; [void]$todo.Add("Ubuntu for WSL2 (a few hundred MB)") }
 }else{
   BAD "WSL is not installed"
   [void]$todo.Add("WSL2 + Ubuntu (a few hundred MB; needs admin + one reboot)")
+}
+
+# --- Apply the new WSL limits before we boot the engine (needs a WSL restart) ---
+if($wc -and $wc.Changed -and $wslOk){
+  Info "Applying the new WSL limits (a quick WSL restart)..."
+  try{ & wsl.exe --shutdown 2>$null }catch{ }
 }
 
 # --- NVIDIA GPU on Windows ---

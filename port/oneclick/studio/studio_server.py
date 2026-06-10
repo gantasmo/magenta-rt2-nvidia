@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MRT2 Studio — local web server (runs INSIDE WSL2, talks to the GPU).
+"""MRT2 Studio: local web server (runs INSIDE WSL2, talks to the GPU).
 
 Loads Magenta RealTime 2 (mrt2_small, JAX/CUDA) ONCE, keeps it warm, and serves:
   GET  /            -> the Studio GUI (index.html)
@@ -70,10 +70,10 @@ def choose_port(preferred, span=40):
     for cand in range(preferred, preferred + span):
         h = _health_of(cand)
         if h and h.get("app") == APP_ID:
-            return cand, True          # our own studio already here — reuse it
+            return cand, True          # our own studio already here, reuse it
         if h is None and _port_free(cand):
-            return cand, False         # free and nobody answering — take it
-        # else: occupied by a foreign process — try the next port
+            return cand, False         # free and nobody answering, take it
+        # else: occupied by a foreign process, try the next port
     raise RuntimeError(f"no free port in range {preferred}..{preferred + span}")
 
 # ----------------------------------------------------------------------------- #
@@ -132,9 +132,9 @@ class Engine:
             t0 = time.time()
             prev = self._gen if extend else None
             if prev is not None and prev.get("prompt") == prompt:
-                emb = prev["emb"]                 # same vibe — keep the embedding
+                emb = prev["emb"]                 # same vibe, keep the embedding
             else:
-                emb = self.embed(prompt)          # new/changed vibe — (re)embed
+                emb = self.embed(prompt)          # new/changed vibe, (re)embed
             state = prev["state"] if prev is not None else None
             wav, new_state = self.mrt.generate(
                 style=emb, frames=frames, state=state,
@@ -183,18 +183,34 @@ class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body=b"", ctype="application/octet-stream", extra=None):
         if isinstance(body, str):
             body = body.encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        for k, v in (extra or {}).items():
-            self.send_header(k, str(v))
-        self.end_headers()
-        if self.command != "HEAD":
-            self.wfile.write(body)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            for k, v in (extra or {}).items():
+                self.send_header(k, str(v))
+            self.end_headers()
+            if self.command != "HEAD":
+                self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # The browser navigated away / reloaded before we finished sending.
+            # That's normal, not a failure. Swallow it so it doesn't bubble up
+            # into a noisy traceback (and a second crash trying to report it).
+            self.close_connection = True
 
     def _json(self, code, obj):
         self._send(code, json.dumps(obj), "application/json")
+
+    def _serve_doc(self, name):
+        # Serve images for the in-app Docs panel from studio/docs/.
+        safe = os.path.basename(name)            # strip any path traversal
+        fp = os.path.join(HERE, "docs", safe)
+        try:
+            with open(fp, "rb") as f:
+                self._send(200, f.read(), _doc_ctype(safe), extra={"Cache-Control": "max-age=3600"})
+        except Exception:
+            self._send(404, "not found", "text/plain")
 
     def do_GET(self):
         path = self.path.split("?", 1)[0]
@@ -211,6 +227,14 @@ class Handler(BaseHTTPRequestHandler):
                 "ready": ENGINE.ready, "status": ENGINE.status,
                 "error": ENGINE.error, "model": MODEL, "device": ENGINE.device,
             })
+        elif path == "/favicon.svg":
+            try:
+                with open(os.path.join(HERE, os.pardir, "favicon.svg"), "rb") as f:
+                    self._send(200, f.read(), "image/svg+xml")
+            except Exception:
+                self._send(404, "no favicon", "text/plain")
+        elif path.startswith("/docs/"):
+            self._serve_doc(path[len("/docs/"):])
         elif path == "/favicon.ico":
             self._send(204)
         else:
@@ -259,6 +283,19 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(500, {"error": f"{type(e).__name__}: {e}"})
             return
         self._send(404, "not found", "text/plain")
+
+
+def _doc_ctype(name):
+    n = name.lower()
+    if n.endswith(".png"):
+        return "image/png"
+    if n.endswith(".svg"):
+        return "image/svg+xml"
+    if n.endswith((".jpg", ".jpeg")):
+        return "image/jpeg"
+    if n.endswith(".gif"):
+        return "image/gif"
+    return "application/octet-stream"
 
 
 def _write_portfile(port):

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# MRT2 Studio — one-click launcher.
+# MRT2 Studio: one-click launcher.
 #
 # Standard-library ONLY (no pip install needed to start). Opens a local web GUI
 # (Three.js) that:
 #   * probes the machine (nvidia-smi, VRAM, RAM) and recommends which MRT2
-#     models can run locally — or to defer to RunPod,
+#     models can run locally, or to defer to RunPod,
 #   * runs MRT2 on RunPod *serverless* (pay-per-use) via your API key,
 #   * (advanced) deploys a serverless endpoint from a Docker image.
 #
@@ -38,7 +38,7 @@ MODEL_REQS = {
 }
 
 # Curated RunPod *serverless* GPU choices (real prices, USD/hr, ~mid-2026).
-# gpuTypeIds are ordered preferences — RunPod picks the first available.
+# gpuTypeIds are ordered preferences. RunPod picks the first available.
 # Serverless bills per-second only while a request runs (scales to zero idle).
 GPU_TIERS = {
     "mrt2_small": [
@@ -50,7 +50,7 @@ GPU_TIERS = {
          "blurb": "Fast and great value. Recommended."},
         {"tier": "max", "label": "H100 80GB", "vram": "80 GB", "price_hr": 4.18,
          "gpuTypeIds": ["NVIDIA H100 80GB HBM3", "NVIDIA H100 PCIe", "NVIDIA H100 NVL"],
-         "blurb": "Lowest latency — overkill for small."},
+         "blurb": "Lowest latency, overkill for small."},
     ],
     "mrt2_base": [
         {"tier": "budget", "label": "RTX 4090", "vram": "24 GB", "price_hr": 1.10,
@@ -140,9 +140,9 @@ def _verdict_for(model, vram, ram):
     elif vram >= r["comfortable"]:
         v = {"local": "yes", "how": r["how_local"], "tier": "local"}
     elif vram >= r["attempt"]:
-        v = {"local": "tight", "how": r["how_local"] + " — tight; RunPod for headroom", "tier": "local-tight"}
+        v = {"local": "tight", "how": r["how_local"] + ", tight; RunPod for headroom", "tier": "local-tight"}
     else:
-        v = {"local": "no", "how": f"needs ~{r['attempt']} GB+ free — defer to RunPod", "tier": "runpod"}
+        v = {"local": "no", "how": f"needs ~{r['attempt']} GB+ free, defer to RunPod", "tier": "runpod"}
     # NVMe/RAM offload only helps OFFLINE (per-step PCIe transfer kills real-time).
     if v["tier"] != "local" and ram and ram >= r["offload_ram"]:
         v["offload"] = f"offline only: CPU/RAM offload can run it on this card (slow, not real-time; {int(ram)} GB RAM)"
@@ -155,13 +155,13 @@ def probe():
     ram = _ram_gb()
     models = {m: _verdict_for(m, best, ram) for m in MODEL_REQS}
     if best is None:
-        rec = "No NVIDIA GPU found here — use RunPod serverless for everything."
+        rec = "No NVIDIA GPU found here. Use RunPod serverless for everything."
     elif models["mrt2_base"]["tier"] == "local":
         rec = f"This GPU ({best} GB) can run both models locally."
     elif models["mrt2_small"]["tier"].startswith("local"):
         rec = f"This GPU ({best} GB) runs mrt2_small locally; use RunPod serverless for mrt2_base."
     else:
-        rec = f"This GPU ({best} GB) is below the bar — use RunPod serverless."
+        rec = f"This GPU ({best} GB) is below the bar. Use RunPod serverless."
     return {
         "platform": {
             "os": platform.system(), "release": platform.release(),
@@ -205,7 +205,7 @@ def secrets_status():
 
 
 # --------------------------------------------------------------------------- #
-#  Local install (background) — optional heavy path
+#  Local install (background), optional heavy path
 # --------------------------------------------------------------------------- #
 _install = {"running": False, "done": False, "ok": None, "log": os.path.join(HERE, "install.log")}
 
@@ -250,7 +250,7 @@ def install_status():
 
 
 # --------------------------------------------------------------------------- #
-#  Local jam (real-time streaming) — spawns the WebSocket stream server
+#  Local jam (real-time streaming), spawns the WebSocket stream server
 # --------------------------------------------------------------------------- #
 _jam = {"proc": None, "port": None, "log": os.path.join(HERE, "jam.log")}
 
@@ -339,6 +339,12 @@ class Handler(BaseHTTPRequestHandler):
         p = self.path.split("?")[0]
         if p in ("/", "/index.html"):
             return self._serve_static("index.html")
+        if p == "/favicon.svg":
+            try:
+                with open(os.path.join(HERE, "favicon.svg"), "rb") as f:
+                    return self._send(200, f.read(), "image/svg+xml")
+            except Exception:
+                return self._send(404, {"error": "no favicon"})
         if p.startswith("/ui/"):
             return self._serve_static(p[4:])
         if p == "/api/probe":

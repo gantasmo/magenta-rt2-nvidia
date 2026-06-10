@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MRT2 Studio: starting…</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<style>
+  :root{ --bg:#0b0d12; --card:#151922; --fg:#eef1f6; --muted:#9aa3b2; --acc:#7c5cff; --err:#ff6b6b; --ok:#37d39b; }
+  *{ box-sizing:border-box }
+  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+        background:radial-gradient(1200px 600px at 50% -10%, #1a1f2e, var(--bg)); color:var(--fg);
+        font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; padding:24px; }
+  .card{ width:100%; max-width:560px; background:var(--card); border:1px solid #232838; border-radius:16px;
+         padding:28px 28px 24px; box-shadow:0 20px 60px rgba(0,0,0,.45); }
+  h1{ margin:0 0 4px; font-size:21px; display:flex; align-items:center; gap:10px }
+  .dot{ width:11px; height:11px; border-radius:50%; background:var(--acc); box-shadow:0 0 0 0 var(--acc);
+        animation:pulse 1.4s infinite; flex:none }
+  .dot.err{ background:var(--err); animation:none }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(124,92,255,.5)} 70%{box-shadow:0 0 0 10px rgba(124,92,255,0)} 100%{box-shadow:0 0 0 0 rgba(124,92,255,0)} }
+  p{ margin:10px 0; color:var(--muted) }
+  .sub{ color:var(--fg) }
+  ol{ margin:14px 0; padding-left:20px } li{ margin:7px 0; color:var(--muted) }
+  code{ background:#0f1320; border:1px solid #232838; border-radius:6px; padding:2px 7px; color:#cdd5e5; font-size:13px }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px }
+  button{ appearance:none; border:0; border-radius:10px; padding:11px 16px; font-size:14px; font-weight:600;
+          cursor:pointer; color:#fff; background:var(--acc) }
+  button.ghost{ background:#222838; color:var(--fg) }
+  button:active{ transform:translateY(1px) }
+  .foot{ margin-top:18px; font-size:12px; color:#6b7488 }
+  .hidden{ display:none }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Phase A: still trying (server may just be slow to wake on first launch) -->
+  <div id="trying">
+    <h1><span class="dot"></span> Starting MRT2 Studio…</h1>
+    <p>Waking the music engine inside WSL. The first launch after a restart can take
+       up to a minute while the model loads onto your GPU.</p>
+    <p class="sub" id="tick">Looking for the engine… </p>
+    <div class="row">
+      <button onclick="goStudio()">Open the Studio →</button>
+    </div>
+    <p style="font-size:12px;margin-top:6px">If it’s already running, that button opens it straight away.</p>
+  </div>
+
+  <!-- Phase B: gave up, give the user a clear, foolproof way out -->
+  <div id="failed" class="hidden">
+    <h1><span class="dot err"></span> The Studio engine didn’t start</h1>
+    <p>This almost always means setup hasn’t finished, or WSL/Ubuntu needs a nudge.
+       The fix is the same friendly installer you ran before. It’s safe to run again
+       and skips anything already done.</p>
+    <ol>
+      <li>Go back to the folder you unzipped and double-click <code>Setup-MRT2.bat</code>.</li>
+      <li>It re-checks your PC, repairs what’s missing, and offers to launch the Studio for you.</li>
+      <li>If it reports a blocker (e.g. no NVIDIA GPU), follow the on-screen step, then run it again.</li>
+    </ol>
+    <p>Still stuck after that? Open <code>INSTALL.md</code> in the same folder. It has a short
+       “If something goes wrong” list.</p>
+    <div class="row">
+      <button onclick="goStudio()">Open the Studio →</button>
+      <button class="ghost" onclick="probeNow()">Try again now</button>
+    </div>
+  </div>
+
+  <div class="foot">MRT2 Studio · Made by GANTASMO · this page opens itself when the engine
+     isn’t reachable, and forwards you to the Studio automatically once it is.</div>
+</div>
+
+<script>
+// We may not know the exact port (the launcher opens this page precisely because
+// the engine never reported one). The server prefers 8777 and steps upward if
+// busy, so probe a small range. A reachable port -> redirect to the live Studio.
+const PORTS = [8777,8778,8779,8780,8781,8782];
+let attempts = 0, foundPort = 8777;
+const MAX_ATTEMPTS = 40;           // ~40 * 1.5s ≈ 60s before we show the fix steps
+const tick = document.getElementById("tick");
+
+// Top-level navigation is never blocked by CORS or Private Network Access, so
+// this always works when the engine is actually up, unlike the fetch probe,
+// which a browser may refuse from a file:// page. This is the reliable way in.
+function goStudio(){ location.href = "http://localhost:" + foundPort + "/"; }
+
+async function reachable(port){
+  try{
+    // no-cors: we can't read the body across origins, but the promise only
+    // resolves if something is actually listening and answering on that port.
+    await fetch(`http://localhost:${port}/health`, {mode:"no-cors", cache:"no-store"});
+    return true;
+  }catch(e){ return false; }
+}
+
+async function probeNow(){
+  // Make "Try again now" responsive even after we've shown the failure state.
+  document.getElementById("failed").classList.add("hidden");
+  document.getElementById("trying").classList.remove("hidden");
+  attempts = 0;
+}
+
+async function loop(){
+  attempts++;
+  tick.textContent = "Looking for the engine… (" + attempts + ")";
+  for(const p of PORTS){
+    if(await reachable(p)){ foundPort = p; location.replace(`http://localhost:${p}/`); return; }
+  }
+  if(attempts >= MAX_ATTEMPTS){
+    document.getElementById("trying").classList.add("hidden");
+    document.getElementById("failed").classList.remove("hidden");
+    return;                        // stop the spinner; user can hit "Try again now"
+  }
+  setTimeout(loop, 1500);
+}
+loop();
+</script>
+</body>
+</html>

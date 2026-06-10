@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MRT2 Studio</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <style>
   :root{--bg:#0c0d10;--fg:#fff;--muted:#9aa0a6;--raised:#1a1c20;--line:#2a2d33;
         --accent:#1E70E6;--ok:#34a853;--warn:#fbbc04;--bad:#ea4335;--mag:#c34bff;}
@@ -38,7 +39,7 @@
   .tab{flex:1;text-align:center;padding:10px;border-radius:10px;background:var(--raised);
     border:1px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);}
   .tab.active{color:#fff;border-color:var(--accent);background:rgba(30,112,230,.14);}
-  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
+  label,.flbl{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
   input[type=text],input[type=password],select{width:100%;background:var(--raised);
     border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:10px 12px;font-size:14px;}
   .row{display:flex;gap:10px;} .row>*{flex:1;}
@@ -73,11 +74,11 @@
 <iframe id="bg" src="vfx.html" title="audio-reactive visualizer" scrolling="no"></iframe>
 <div id="app"><div class="wrap">
   <h1>MRT2 <span class="g">Studio</span></h1>
-  <div class="tag">Magenta RealTime 2 — local on NVIDIA, or pay-per-use on RunPod serverless.</div>
+  <div class="tag">Magenta RealTime 2: local on NVIDIA, or pay-per-use on RunPod serverless.</div>
 
   <div class="vizbar">
-    <span class="vizlbl">Visualizer</span>
-    <select id="viz">
+    <span class="vizlbl" id="vizlbl">Visualizer</span>
+    <select id="viz" aria-labelledby="vizlbl">
       <option value="ghost">Liquid Glass Ghost</option>
       <option value="ferro">Ferrofluid Spike</option>
       <option value="cymatic">Cymatic Ring</option>
@@ -101,25 +102,25 @@
 
   <!-- RUNPOD -->
   <div class="card" id="panel-runpod">
-    <h2>RunPod — pay only while generating</h2>
-    <label>API key <span id="keyState" style="color:#7ee2a0"></span></label>
+    <h2>RunPod: pay only while generating</h2>
+    <label for="apiKey">API key <span id="keyState" style="color:#7ee2a0"></span></label>
     <input type="password" id="apiKey" placeholder="paste RunPod API key (stored locally, never committed)" />
     <div class="secure">🔒 Saved only to <b>secrets.local.json</b> (gitignored). Never sent to git or logged.</div>
     <div class="row">
-      <div><label>Endpoint ID</label><input type="text" id="endpointId" placeholder="existing endpoint id (or deploy below)"></div>
-      <div><label>Docker image</label><input type="text" id="dockerImage" placeholder="user/mrt2-serverless:latest"></div>
+      <div><label for="endpointId">Endpoint ID</label><input type="text" id="endpointId" placeholder="existing endpoint id (or deploy below)"></div>
+      <div><label for="dockerImage">Docker image</label><input type="text" id="dockerImage" placeholder="user/mrt2-serverless:latest"></div>
     </div>
     <button class="ghost" id="saveKey">Save credentials</button>
-    <label style="margin-top:14px">Pick a GPU <span id="gpuModelTag" style="color:var(--muted)"></span></label>
+    <div class="flbl" style="margin-top:14px">Pick a GPU <span id="gpuModelTag" style="color:var(--muted)"></span></div>
     <div id="gpuTiers" class="gpu-tiers">loading options…</div>
     <button class="ghost" id="deploy">Deploy serverless endpoint ▸</button>
-    <div class="hint">Deploy needs the <b>serverless/</b> image built &amp; pushed once (a one-time dev step). Scales to zero when idle — you pay per second of inference.</div>
+    <div class="hint">Deploy needs the <b>serverless/</b> image built &amp; pushed once (a one-time dev step). Scales to zero when idle. You pay per second of inference.</div>
     <div class="status" id="rpStatus"></div>
   </div>
 
   <!-- LOCAL -->
   <div class="card" id="panel-local" style="display:none">
-    <h2>Local GPU — install once, run free</h2>
+    <h2>Local GPU: install once, run free</h2>
     <div class="hint">Installs an isolated Python env with <b>magenta-rt</b> + CUDA JAX. One click; a few minutes. The native real-time C++ engine is a separate advanced build (see port/README).</div>
     <button id="install">Install local engine</button>
     <div class="status" id="instStatus"></div>
@@ -129,22 +130,22 @@
   <!-- GENERATE (shared) -->
   <div class="card">
     <h2 id="genTitle">Generate</h2>
-    <label>Prompt</label>
+    <label for="prompt">Prompt</label>
     <input type="text" id="prompt" value="warm analog pads with a deep sub bass" />
     <div class="row">
-      <div><label>Model</label><select id="model"><option value="mrt2_small">mrt2_small</option><option value="mrt2_base">mrt2_base</option></select></div>
-      <div><label>Duration (s)</label><input type="text" id="duration" value="8"></div>
+      <div><label for="model">Model</label><select id="model"><option value="mrt2_small">mrt2_small</option><option value="mrt2_base">mrt2_base</option></select></div>
+      <div><label for="duration">Duration (s)</label><input type="text" id="duration" value="8"></div>
     </div>
     <div class="sliders">
-      <label>Temperature</label><input type="range" id="temperature" min="0.5" max="2" step="0.05" value="1.3"><div class="val" id="temperature_v">1.30</div>
-      <label>Top-k</label><input type="range" id="top_k" min="1" max="256" step="1" value="40"><div class="val" id="top_k_v">40</div>
-      <label>CFG style</label><input type="range" id="cfg_musiccoca" min="0" max="7" step="0.1" value="3"><div class="val" id="cfg_musiccoca_v">3.0</div>
-      <label>CFG notes</label><input type="range" id="cfg_notes" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_notes_v">1.0</div>
-      <label>CFG drums</label><input type="range" id="cfg_drums" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_drums_v">1.0</div>
-      <label>Drums</label><select id="drumsMode" style="grid-column:span 2"><option value="-1">Auto</option><option value="1">On</option><option value="0">Off</option></select>
+      <label for="temperature">Temperature</label><input type="range" id="temperature" min="0.5" max="2" step="0.05" value="1.3"><div class="val" id="temperature_v">1.30</div>
+      <label for="top_k">Top-k</label><input type="range" id="top_k" min="1" max="256" step="1" value="40"><div class="val" id="top_k_v">40</div>
+      <label for="cfg_musiccoca">CFG style</label><input type="range" id="cfg_musiccoca" min="0" max="7" step="0.1" value="3"><div class="val" id="cfg_musiccoca_v">3.0</div>
+      <label for="cfg_notes">CFG notes</label><input type="range" id="cfg_notes" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_notes_v">1.0</div>
+      <label for="cfg_drums">CFG drums</label><input type="range" id="cfg_drums" min="0" max="7" step="0.1" value="1"><div class="val" id="cfg_drums_v">1.0</div>
+      <label for="drumsMode">Drums</label><select id="drumsMode" style="grid-column:span 2"><option value="-1">Auto</option><option value="1">On</option><option value="0">Off</option></select>
     </div>
     <div class="sliders" style="grid-template-columns:120px 1fr 46px;margin-top:10px">
-      <label>Master volume</label><input type="range" id="volume" min="0" max="1" step="0.01" value="0.9"><div class="val" id="volume_v">90</div>
+      <label for="volume">Master volume</label><input type="range" id="volume" min="0" max="1" step="0.01" value="0.9"><div class="val" id="volume_v">90</div>
     </div>
     <button id="actionBtn">▶ Generate</button>
     <button class="ghost" id="newBtn" style="display:none">↻ New</button>
@@ -180,7 +181,7 @@ const badge=t=>t==='yes'?'<span class="badge b-yes">runs here</span>':
   $("rec").style.display='block'; $("rec").textContent='💡 '+p.recommendation;
   if(g) for(const o of $("model").options) o.text=k_label(o.value,p.models[o.value]);
 })();
-function k_label(name,v){return name+(v?` — ${v.local==='yes'?'local ok':v.local==='tight'?'tight':'RunPod'}`:'');}
+function k_label(name,v){return name+(v?` (${v.local==='yes'?'local ok':v.local==='tight'?'tight':'RunPod'})`:'');}
 
 /* ---------- credential status ---------- */
 async function refreshStatus(){
@@ -251,12 +252,12 @@ $("deploy").onclick=async()=>{
 
 /* ---------- local install ---------- */
 $("install").onclick=async()=>{
-  $("instStatus").textContent='Installing… (venv + CUDA JAX + model download — a few minutes)';
+  $("instStatus").textContent='Installing… (venv + CUDA JAX + model download, a few minutes)';
   await api('/api/local/install',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:$("model").value})});
   $("instLog").style.display='block';
   const poll=setInterval(async()=>{
     const s=await api('/api/local/status');
-    $("instStatus").textContent=s.running?'Installing…':(s.ok?'Installed ✓ — switch to Jam below':(s.done?'Failed — see log':''));
+    $("instStatus").textContent=s.running?'Installing…':(s.ok?'Installed ✓. Switch to Jam below':(s.done?'Failed, see log':''));
     $("instLog").textContent=s.tail||''; if(s.done)clearInterval(poll);
   },1500);
 };
@@ -293,7 +294,7 @@ function playChunk(buf){
 }
 async function startJam(){
   busy=true; updateAction(); $("player").style.display='none'; capBuf=[]; capLen=0;
-  $("genStatus").textContent='Starting engine — first run loads the model (up to a minute)…';
+  $("genStatus").textContent='Starting engine. First run loads the model (up to a minute)…';
   const r=await api('/api/local/jam/start',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:$("model").value,prompt:$("prompt").value,...params()})});
   if(!r.ok){$("genStatus").textContent='Error: '+r.error;busy=false;updateAction();return;}
@@ -339,10 +340,10 @@ async function renderRunPod(){
 function updateAction(){
   const b=$("actionBtn"),s=$("stopBtn"),n=$("newBtn");
   if(mode==='local'){
-    $("genTitle").textContent='Jam — local real-time'; b.textContent=busy?'▮ Jamming…':'▶ Start Jamming';
+    $("genTitle").textContent='Jam (local real-time)'; b.textContent=busy?'▮ Jamming…':'▶ Start Jamming';
     b.disabled=busy; s.style.display=busy?'inline-block':'none'; n.style.display=busy?'inline-block':'none';
   }else{
-    $("genTitle").textContent='Render — RunPod'; b.textContent='▶ Generate clip'; b.disabled=busy; s.style.display='none'; n.style.display='none';
+    $("genTitle").textContent='Render (RunPod)'; b.textContent='▶ Generate clip'; b.disabled=busy; s.style.display='none'; n.style.display='none';
   }
 }
 $("actionBtn").onclick=()=>{ if(mode==='local'){ if(!busy)startJam(); } else renderRunPod(); };
@@ -370,7 +371,7 @@ $("saveBtn").onclick=()=>{
     else $("genStatus").textContent='Render a clip first.';
     return;
   }
-  if(!capLen){$("genStatus").textContent='Nothing captured yet — start jamming first.';return;}
+  if(!capLen){$("genStatus").textContent='Nothing captured yet. Start jamming first.';return;}
   const merged=new Float32Array(capLen); let off=0; for(const c of capBuf){merged.set(c,off);off+=c.length;}
   const url=URL.createObjectURL(encodeWAV(merged,fmt.sample_rate,fmt.channels));
   downloadURL(url,'mrt2_jam_last30s.wav'); setTimeout(()=>URL.revokeObjectURL(url),3000);

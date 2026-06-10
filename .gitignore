@@ -22,6 +22,7 @@ ENV/
 *.ogg
 output/
 .studio_port
+.wsl_distro
 
 # ── Logs ──
 *.log

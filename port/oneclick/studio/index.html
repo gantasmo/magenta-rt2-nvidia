@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0a0b12"/>
 <title>MRT2 Studio</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
 <style>
   :root{
     --bg:#0a0b12; --panel:rgba(255,255,255,.04); --panel2:rgba(255,255,255,.06);
@@ -39,7 +40,7 @@
   .mini{padding:6px 10px;font-size:12.5px;color:var(--dim);min-height:0;border-radius:9px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(12px,3vw,18px);margin-bottom:12px;backdrop-filter:blur(8px)}
   .between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  label{display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  label,.lbl{display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
   textarea{width:100%;min-height:60px;resize:vertical;background:#0c0e1a;color:var(--txt);
            border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit}
   textarea:focus{outline:none;border-color:var(--acc)}
@@ -56,7 +57,7 @@
   .knob .val{font-variant-numeric:tabular-nums;color:var(--acc2);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--acc);margin-top:2px;height:22px}
   .drumsrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
-  .drumsrow>label{margin:0}
+  .drumsrow>label,.drumsrow>.lbl{margin:0}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel)}
   .seg button{border:none;border-radius:0;background:transparent;padding:8px 13px;font-size:13px;color:var(--dim);min-height:0}
   .seg button.on{background:linear-gradient(90deg,var(--acc),#5a78ff);color:#fff}
@@ -88,6 +89,37 @@
   .err{color:var(--bad)}
   #ov{position:fixed;inset:0;background:rgba(6,7,16,.92);display:flex;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(6px);padding:24px}
   #ov .box{text-align:center;max-width:440px}
+  /* Docs panel */
+  #docs{position:fixed;inset:0;background:rgba(6,7,16,.96);display:none;z-index:60;backdrop-filter:blur(6px);padding:24px}
+  #docs.show{display:flex;align-items:flex-start;justify-content:center}
+  .dcard{background:var(--bg);border:1px solid var(--line);border-radius:16px;width:min(880px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .dhead{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line);background:var(--bg)}
+  .dhead h2{margin:0;font-size:17px}
+  .dhead .x{margin-left:auto}
+  .dbody{padding:4px 20px 26px;overflow:auto}
+  .dnav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;position:sticky;top:0;background:var(--bg);z-index:1;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .dnav a{font-size:12.5px;color:var(--acc2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+  .dnav a:hover{border-color:var(--acc);color:var(--txt)}
+  .dbody h3{margin:24px 0 8px;font-size:15px;color:var(--txt);letter-spacing:.3px}
+  .dbody h4{margin:18px 0 6px;font-size:12.5px;color:var(--txt)}
+  .dbody p,.dbody li{color:var(--dim);font-size:13.5px;line-height:1.6}
+  .dbody ol,.dbody ul{padding-left:20px;margin:8px 0}
+  .dbody code{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12px;color:#cdd5ff}
+  .dbody pre{background:#070810;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow:auto;margin:10px 0}
+  .dbody pre code{background:none;border:none;padding:0;color:#cdd5ff;font-size:12px;white-space:pre}
+  .dtable{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
+  .dtable th,.dtable td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  .dtable th{color:var(--txt);background:var(--panel)}
+  .dtable td{color:var(--dim)}
+  .dgrid{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .dgrid figure{margin:0;flex:1;min-width:240px}
+  .dshot{width:100%;border:1px solid var(--line);border-radius:10px}
+  .dshot.mob{max-width:260px}
+  .dgrid figcaption{font-size:12px;color:var(--dim);margin-top:5px}
+  .dmeth{display:inline-block;font-weight:700;font-size:11px;border-radius:5px;padding:1px 7px;margin-right:7px;color:#fff;vertical-align:middle}
+  .dmeth.get{background:#1f9d76}
+  .dmeth.post{background:var(--acc)}
+  .dabout a{color:var(--acc2)}
   .spinner{width:54px;height:54px;border-radius:50%;margin:0 auto 18px;border:4px solid rgba(255,255,255,.12);border-top-color:var(--acc);animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   /* desktop: panels always expanded, no summary chrome */
@@ -111,6 +143,7 @@
   <header>
     <div class="logo">MRT2 <b>Studio</b></div>
     <div class="pill"><span id="dot" class="dot"></span><span id="stat">connecting…</span></div>
+    <button class="ghost" id="docsbtn" title="Quickstart, API and troubleshooting">📖 Docs</button>
     <button class="ghost" id="quit" title="Stop the engine">⏻ Quit</button>
   </header>
 
@@ -125,22 +158,22 @@
     <details class="auto" id="more">
       <summary>Sound controls</summary>
       <div class="controls">
-        <div class="knob"><div class="row"><label>Length</label><span class="val" id="durV">30s</span></div>
+        <div class="knob"><div class="row"><label for="dur">Length</label><span class="val" id="durV">30s</span></div>
           <input type="range" id="dur" min="4" max="180" step="1" value="30"></div>
-        <div class="knob"><div class="row"><label>Temperature</label><span class="val" id="tempV">1.30</span></div>
+        <div class="knob"><div class="row"><label for="temp">Temperature</label><span class="val" id="tempV">1.30</span></div>
           <input type="range" id="temp" min="0.5" max="2.0" step="0.05" value="1.3"></div>
-        <div class="knob"><div class="row"><label>Top-k</label><span class="val" id="tkV">40</span></div>
+        <div class="knob"><div class="row"><label for="tk">Top-k</label><span class="val" id="tkV">40</span></div>
           <input type="range" id="tk" min="1" max="200" step="1" value="40"></div>
-        <div class="knob"><div class="row"><label>Style strength</label><span class="val" id="csV">3.0</span></div>
+        <div class="knob"><div class="row"><label for="cs">Style strength</label><span class="val" id="csV">3.0</span></div>
           <input type="range" id="cs" min="0" max="7" step="0.1" value="3.0"></div>
-        <div class="knob"><div class="row"><label>Melody strength</label><span class="val" id="cnV">1.0</span></div>
+        <div class="knob"><div class="row"><label for="cn">Melody strength</label><span class="val" id="cnV">1.0</span></div>
           <input type="range" id="cn" min="0" max="7" step="0.1" value="1.0"></div>
-        <div class="knob"><div class="row"><label>Drum strength</label><span class="val" id="cdV">1.0</span></div>
+        <div class="knob"><div class="row"><label for="cd">Drum strength</label><span class="val" id="cdV">1.0</span></div>
           <input type="range" id="cd" min="0" max="7" step="0.1" value="1.0"></div>
       </div>
       <div class="drumsrow">
-        <label>Drums</label>
-        <div class="seg" id="drumseg">
+        <span class="lbl" id="drumlbl">Drums</span>
+        <div class="seg" id="drumseg" role="group" aria-labelledby="drumlbl">
           <button data-v="-1" class="on">Auto</button><button data-v="1">On</button><button data-v="0">Off</button>
         </div>
       </div>
@@ -178,7 +211,7 @@
         <button class="mini" id="clear" title="Clear list">Clear</button>
       </div>
     </div>
-    <div class="hist" id="hist"><div class="muted">Nothing yet — hit Generate.</div></div>
+    <div class="hist" id="hist"><div class="muted">Nothing yet. Hit Generate.</div></div>
   </details>
 
   <footer>Made by <b>GANTASMO</b></footer>
@@ -188,6 +221,114 @@
   <div class="spinner" id="sp"></div>
   <div id="ovt" style="font-size:18px;font-weight:700">Waking up the musician…</div>
   <div class="muted" id="ovs" style="margin-top:8px">Loading the model onto your GPU. First time takes ~30–60 seconds.</div>
+</div></div>
+
+<div id="docs" role="dialog" aria-modal="true" aria-labelledby="docsTitle"><div class="dcard">
+  <div class="dhead">
+    <h2 id="docsTitle">📖 MRT2 Studio Docs</h2>
+    <button class="ghost x" id="docsclose" title="Close">✕ Close</button>
+  </div>
+  <div class="dbody">
+    <nav class="dnav">
+      <a href="#d-quickstart">Quickstart</a>
+      <a href="#d-controls">Controls</a>
+      <a href="#d-shots">Screenshots</a>
+      <a href="#d-api">API</a>
+      <a href="#d-trouble">Troubleshooting</a>
+      <a href="#d-about">About</a>
+    </nav>
+
+    <h3 id="d-quickstart">Quickstart</h3>
+    <p>MRT2 Studio generates an audio track from a text description using the <code>mrt2_small</code> model on the local GPU.</p>
+    <ol>
+      <li>Enter a description in the prompt field at the top of the page.</li>
+      <li>Open <b>Sound controls</b> to set length and other parameters. The defaults suit most prompts.</li>
+      <li>Press <b>Generate</b>. The first run after launch compiles the model and takes 30 to 60 seconds. Later runs are faster.</li>
+      <li>The track plays in the player and is written to <code>oneclick\studio\output\</code> as a WAV file.</li>
+      <li>Press <b>Extend</b> to add audio to the current track. A changed prompt before Extend morphs the continuation into the new description without a cut.</li>
+    </ol>
+    <p>Generated tracks also appear in the <b>History</b> panel and persist across reloads.</p>
+
+    <h3 id="d-controls">Controls</h3>
+    <table class="dtable">
+      <tr><th>Control</th><th>Effect</th><th>Range</th><th>API field</th></tr>
+      <tr><td>Length</td><td>Track duration in seconds</td><td>4 to 180</td><td><code>duration</code></td></tr>
+      <tr><td>Temperature</td><td>Randomness of the output</td><td>0.5 to 2.0</td><td><code>temperature</code></td></tr>
+      <tr><td>Top-k</td><td>Candidate tokens sampled at each step</td><td>1 to 200</td><td><code>top_k</code></td></tr>
+      <tr><td>Style strength</td><td>Weight of the prompt on the result</td><td>0 to 7</td><td><code>cfg_musiccoca</code></td></tr>
+      <tr><td>Melody strength</td><td>Weight of melodic conditioning</td><td>0 to 7</td><td><code>cfg_notes</code></td></tr>
+      <tr><td>Drum strength</td><td>Weight of the drum track</td><td>0 to 7</td><td><code>cfg_drums</code></td></tr>
+      <tr><td>Drums</td><td>Drum presence</td><td>Auto, On, Off</td><td><code>drums</code> (-1, 1, 0)</td></tr>
+    </table>
+
+    <h3 id="d-shots">Screenshots</h3>
+    <div class="dgrid">
+      <figure><img class="dshot" src="/docs/studio.png" alt="MRT2 Studio desktop layout"><figcaption>Desktop layout: prompt, sound controls, visualizer, and player.</figcaption></figure>
+      <figure><img class="dshot mob" src="/docs/studio-mobile.png" alt="MRT2 Studio mobile layout"><figcaption>Compact layout for one phone screen.</figcaption></figure>
+    </div>
+
+    <h3 id="d-api">API reference</h3>
+    <p>The Studio server runs inside WSL2 and listens on <code>http://localhost:8777</code>. The active port is recorded in <code>.studio_port</code> and steps higher when the default is busy.</p>
+
+    <h4><span class="dmeth get">GET</span> /health</h4>
+    <p>Returns engine status as JSON.</p>
+    <pre><code>{
+  "app": "mrt2-studio",
+  "ready": true,
+  "status": "ready",
+  "error": null,
+  "model": "mrt2_small",
+  "device": "cuda:0"
+}</code></pre>
+
+    <h4><span class="dmeth post">POST</span> /generate</h4>
+    <p>Accepts a JSON body and returns <code>audio/wav</code> bytes. Unset fields fall back to defaults.</p>
+    <table class="dtable">
+      <tr><th>Field</th><th>Type</th><th>Default</th></tr>
+      <tr><td><code>prompt</code></td><td>string</td><td>"warm analog pads"</td></tr>
+      <tr><td><code>duration</code></td><td>seconds</td><td>10</td></tr>
+      <tr><td><code>temperature</code></td><td>number</td><td>1.3</td></tr>
+      <tr><td><code>top_k</code></td><td>integer</td><td>40</td></tr>
+      <tr><td><code>cfg_musiccoca</code></td><td>number</td><td>3.0</td></tr>
+      <tr><td><code>cfg_notes</code></td><td>number</td><td>1.0</td></tr>
+      <tr><td><code>cfg_drums</code></td><td>number</td><td>1.0</td></tr>
+      <tr><td><code>drums</code></td><td>-1, 1, 0</td><td>-1</td></tr>
+    </table>
+    <p>Response headers report timing and output details:</p>
+    <table class="dtable">
+      <tr><th>Header</th><th>Meaning</th></tr>
+      <tr><td><code>X-Generate-Seconds</code></td><td>Compute time for the segment</td></tr>
+      <tr><td><code>X-Audio-Seconds</code></td><td>Length of the full track</td></tr>
+      <tr><td><code>X-Segment-Seconds</code></td><td>Length of the new segment</td></tr>
+      <tr><td><code>X-RTF</code></td><td>Real-time factor, segment seconds divided by compute seconds</td></tr>
+      <tr><td><code>X-Sample-Rate</code></td><td>Output sample rate in Hz</td></tr>
+      <tr><td><code>X-Filename</code></td><td>Saved file name in the output folder</td></tr>
+    </table>
+
+    <h4><span class="dmeth post">POST</span> /extend</h4>
+    <p>Takes the same body as <code>/generate</code>. Continues the current piece from the model state and returns the full track. A changed <code>prompt</code> morphs the continuation.</p>
+
+    <h4><span class="dmeth post">POST</span> /shutdown</h4>
+    <p>Stops the server process. The <b>Quit</b> button calls this endpoint.</p>
+
+    <h4>Example</h4>
+    <pre><code>curl -s "http://localhost:8777/generate" -H "Content-Type: application/json" -d "{\"prompt\":\"dreamy lofi piano\",\"duration\":8}" --output track.wav</code></pre>
+
+    <h3 id="d-trouble">Troubleshooting</h3>
+    <table class="dtable">
+      <tr><th>Symptom</th><th>Cause and resolution</th></tr>
+      <tr><td>Status reads "server offline" or the spinner does not clear</td><td>The engine process stopped. Re-open <code>MRT2-Studio</code>, or run <code>Setup-MRT2.bat</code> to repair.</td></tr>
+      <tr><td>The overlay shows "Engine error"</td><td>The model failed to load. <code>Setup-MRT2.bat</code> re-downloads and verifies the model.</td></tr>
+      <tr><td>The first generation is slow</td><td>The model compiles once per launch, which takes 30 to 60 seconds.</td></tr>
+      <tr><td>The player produces no sound</td><td>The browser requires one click on the player before audio starts.</td></tr>
+      <tr><td>A generation stops partway</td><td>The browser closed the connection. Reload the page and generate again.</td></tr>
+      <tr><td>WSL warns about processors or memory</td><td><code>Setup-MRT2.bat</code> writes a <code>.wslconfig</code> sized to the machine. Run it again to apply.</td></tr>
+      <tr><td>A page titled "starting" opens instead of the Studio</td><td>The engine did not report a port. The page forwards to the Studio once the engine answers, and otherwise links back to <code>Setup-MRT2.bat</code>.</td></tr>
+    </table>
+
+    <h3 id="d-about">About</h3>
+    <p class="dabout">MRT2 Studio is an NVIDIA/CUDA port of <a href="https://github.com/magenta/magenta-realtime" target="_blank" rel="noopener">Magenta RealTime 2</a>, built by <a href="https://gantasmo.com" target="_blank" rel="noopener">GANTASMO</a> as part of <a href="https://github.com/gantasmo" target="_blank" rel="noopener">theDAW</a>. It was created at the <a href="https://musichackspace.org/" target="_blank" rel="noopener">Music Hackspace</a> <a href="https://musichackspace.org/events/hackathon-boston-june-2026" target="_blank" rel="noopener">Music Technology Hackathon</a> at Berklee College of Music.</p>
+  </div>
 </div></div>
 
 <script>
@@ -253,17 +394,52 @@ function idbAll(){return new Promise(res=>{ if(!db)return res([]); try{ const rq
   rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>res([]); }catch(e){res([]);} });}
 
 // ---- health / overlay ----
+// Never leave the user on an endless spinner or a raw stack trace: when the
+// engine errors or stops responding, swap the overlay to a clear, navigable fix.
+let offlineStreak=0;
+const FIX_STEPS = 'Close this tab and double-click <b>MRT2-Studio</b> again to restart the engine. '
+  + 'If that doesn’t help, re-run <b>Setup-MRT2.bat</b> from the folder you unzipped. It repairs '
+  + 'missing pieces and is always safe to run again.';
+function showEngineProblem(title, detail){
+  $("#dot").className="dot err"; $("#sp").style.display="none";
+  $("#ovt").innerHTML='<span class="err">'+title+'</span>';
+  $("#ovs").innerHTML = (detail ? '<div style="margin-bottom:8px">'+detail+'</div>' : '')
+    + '<div>'+FIX_STEPS+'</div>'
+    + '<div style="margin-top:12px"><button onclick="location.reload()" style="appearance:none;'
+    + 'border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;color:#fff;'
+    + 'background:#7c5cff">Reload</button></div>';
+  $("#ov").style.display="flex";
+}
 async function poll(){
   try{
     const h=await (await fetch("/health")).json();
+    offlineStreak=0;
     $("#stat").textContent = h.ready ? ("ready · "+String(h.device).replace(/[<>]/g,"")) : h.status;
-    if(h.error){ $("#dot").className="dot err"; $("#ovt").innerHTML='<span class="err">Engine error</span>';
-      $("#ovs").textContent=h.error; $("#sp").style.display="none"; return; }
+    if(h.error){ showEngineProblem("Engine error", String(h.error).replace(/[<>]/g,"")); return; }
     if(h.ready && !ready){ ready=true; $("#dot").className="dot ok"; $("#ov").style.display="none"; $("#go").disabled=false; }
-    if(!h.ready){ $("#ovs").textContent=h.status; }
-  }catch(e){ $("#stat").textContent="server offline"; $("#dot").className="dot err"; }
+    if(!h.ready){ $("#sp").style.display=""; $("#ovt").innerHTML="Waking up the musician…"; $("#ovs").textContent=h.status; }
+  }catch(e){
+    $("#stat").textContent="server offline"; $("#dot").className="dot err"; offlineStreak++;
+    if(!ready && offlineStreak>=6){                 // ~12s with no engine at all
+      showEngineProblem("Can’t reach the music engine",
+        "The engine isn’t responding. It may still be starting, or setup didn’t finish.");
+    } else if(ready && offlineStreak>=4){            // we had it, then lost it
+      ready=false; $("#go").disabled=true;
+      showEngineProblem("Lost connection to the engine",
+        "The engine stopped responding.");
+    }
+  }
 }
 $("#go").disabled=true; poll(); setInterval(poll,2000);
+
+// ---- docs panel ----
+const docsEl=$("#docs");
+function openDocs(){ docsEl.classList.add("show"); docsEl.querySelector(".dbody").scrollTop=0; }
+function closeDocs(){ docsEl.classList.remove("show"); }
+$("#docsbtn").onclick=openDocs;
+$("#docsclose").onclick=closeDocs;
+docsEl.addEventListener("click",e=>{ if(e.target===docsEl) closeDocs(); });
+addEventListener("keydown",e=>{ if(e.key==="Escape"&&docsEl.classList.contains("show")) closeDocs(); });
 
 // ---- visualizer ----
 const cvs=$("#viz"), cx=cvs.getContext("2d"); let actx,analyser,gain,freq,timeArr;
@@ -308,7 +484,7 @@ function draw(){
 const hist=$("#hist"); let items=[], current=null;
 function refreshCount(){ $("#histcount").textContent = items.length ? (items.length+(items.length>1?" tracks":" track")) : ""; }
 function setNow(rec){ $("#player").src=rec.url; $("#dl").href=rec.url; $("#dl").download=rec.file;
-  $("#nowmeta").textContent=`“${rec.prompt}” — ${fmtTime(rec.dur)}${rec.segs>1?` (${rec.segs} parts)`:""}, ${(+rec.rtf).toFixed(1)}× real-time`; }
+  $("#nowmeta").textContent=`“${rec.prompt}” · ${fmtTime(rec.dur)}${rec.segs>1?` (${rec.segs} parts)`:""}, ${(+rec.rtf).toFixed(1)}× real-time`; }
 function playRec(rec,seekTo){
   setNow(rec); initViz(); if(actx&&actx.state==="suspended")actx.resume();
   const p=$("#player"); p.loop=$("#loop").checked;
@@ -316,7 +492,7 @@ function playRec(rec,seekTo){
   else p.play().catch(()=>{});
 }
 function rowHTML(rec){return `<button class="play" title="Play">▶</button>
-  <input class="t" value="${rec.prompt.replace(/"/g,'&quot;')}" spellcheck="false">
+  <input class="t" name="track-title" id="track-${rec.id}" aria-label="Track name" value="${rec.prompt.replace(/"/g,'&quot;')}" spellcheck="false">
   <span class="s">${fmtTime(rec.dur)} · ${(+rec.rtf).toFixed(1)}×</span>
   <span class="act"><button class="use" title="Load these settings">⚙</button>
   <button class="dlb" title="Download">⤓</button><button class="del" title="Remove">✕</button></span>`;}
@@ -326,7 +502,7 @@ function itemEl(rec){ const el=document.createElement("div"); el.className="item
   el.querySelector(".use").onclick=()=>{applyTo(rec.settings);save();};
   el.querySelector(".dlb").onclick=()=>{const a=document.createElement("a");a.href=rec.url;a.download=rec.file;a.click();};
   el.querySelector(".del").onclick=()=>{ items=items.filter(x=>x!==rec); if(rec.url)URL.revokeObjectURL(rec.url); idbDel(rec.id); el.remove();
-    if(!items.length)hist.innerHTML='<div class="muted">Nothing yet — hit Generate.</div>'; refreshCount(); };
+    if(!items.length)hist.innerHTML='<div class="muted">Nothing yet. Hit Generate.</div>'; refreshCount(); };
   return el; }
 function addHistory(rec){ if(!items.length)hist.innerHTML=""; items.unshift(rec); hist.prepend(itemEl(rec)); refreshCount(); }
 function appendHistory(rec){ if(!items.length)hist.innerHTML=""; items.push(rec); hist.appendChild(itemEl(rec)); refreshCount(); }
@@ -334,7 +510,7 @@ function updateHistItem(rec){ if(rec._el)rec._el.querySelector(".s").textContent
 $("#dlall").onclick=()=>items.slice().reverse().forEach((r,i)=>setTimeout(()=>{const a=document.createElement("a");a.href=r.url;a.download=r.file;a.click();},i*250));
 $("#clear").onclick=()=>{ if(items.length&&!confirm("Clear the history list? (Saved .wav files stay on disk.)"))return;
   items.forEach(r=>r.url&&URL.revokeObjectURL(r.url)); items=[]; current=null; $("#ext").disabled=true; idbClear();
-  hist.innerHTML='<div class="muted">Nothing yet — hit Generate.</div>'; refreshCount(); };
+  hist.innerHTML='<div class="muted">Nothing yet. Hit Generate.</div>'; refreshCount(); };
 
 // ---- generate / extend ----
 let busy=false;
