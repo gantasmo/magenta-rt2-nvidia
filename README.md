@@ -9,6 +9,15 @@ Made by **[GANTASMO](https://gantasmo.com)**.
 
 ![MRT2 Studio: type a prompt, press Generate, and an original track plays](docs/studio.png)
 
+## Requirements
+
+- **Windows 10 or 11** with an **NVIDIA GPU** (the installer enables WSL2 if needed), or a
+  Linux host with an NVIDIA GPU.
+- About **6 GB** of free disk space and an internet connection for first-time setup.
+- The `mrt2_small` model runs locally. The larger `mrt2_base` model runs on a RunPod cloud GPU.
+
+New to "WSL"? The installer turns it on for you. Full walkthrough: **[INSTALL.md](INSTALL.md)**.
+
 ## ⬇️ Get started (easiest, no terminal)
 
 1. **[Download the latest release ZIP](../../releases/latest)** (`MRT2-Studio.zip`).
@@ -33,9 +42,6 @@ Every track is also saved to `oneclick\studio\output\`.
 
 <p align="center"><img src="docs/studio-mobile.png" alt="MRT2 Studio on a phone" width="320"></p>
 
-**Requirements:** Windows 10/11 and an NVIDIA GPU. Full walkthrough, including how to add
-"WSL" if you don't have it yet: **[INSTALL.md](INSTALL.md)**.
-
 > ## ⚠️ Read this if you're cloning or using GitHub's "Download ZIP"
 > This project links the upstream engine source as a **git submodule** (`port_src/`).
 > GitHub's green **Code → Download ZIP** button and a plain `git clone` leave that folder
@@ -56,13 +62,6 @@ Every track is also saved to `oneclick\studio\output\`.
 | `port/server/` | streaming server |
 | `port/` | CUDA port kit (Dockerfile, build scripts) |
 | `port_src/` | upstream Magenta RealTime engine source (git submodule, Apache-2.0) |
-
-## Requirements
-
-- Windows 10/11 with an NVIDIA GPU (the installer enables WSL2 if needed), or a Linux
-  host with an NVIDIA GPU.
-- The `mrt2_small` model runs locally. The larger `mrt2_base` model runs on a RunPod
-  cloud GPU.
 
 ## Packaging
 
