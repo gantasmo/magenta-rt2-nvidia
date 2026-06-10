@@ -1,4 +1,4 @@
-# Magenta RealTime 2 — native C++ engine on NVIDIA/CUDA.
+# Magenta RealTime 2: native C++ engine on NVIDIA/CUDA.
 # Builds `core` + the headless `hello_mrt2` CLI from the open magenta-realtime
 # source with MLX's CUDA backend enabled.
 #

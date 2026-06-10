@@ -1,9 +1,9 @@
-# Magenta RealTime 2 — streaming WebSocket server (backend-agnostic).
+# Magenta RealTime 2: streaming WebSocket server (backend-agnostic).
 #
 # Wraps the official `magenta_rt` streaming system and pushes audio chunks to
 # any number of browser clients, accepting live control (prompt / params).
 #
-# Backend today: JAX (Layer 0 — runs on NVIDIA via `jax[cuda13]`, Google-official).
+# Backend today: JAX (Layer 0, runs on NVIDIA via `jax[cuda13]`, Google-official).
 # The protocol + client are identical for the native C++ engine later (Layer 2),
 # so only this file changes when you swap backends.
 #

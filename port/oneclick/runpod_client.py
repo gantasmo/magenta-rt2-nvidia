@@ -1,4 +1,4 @@
-# RunPod REST/serverless client — standard library only (no `pip install`).
+# RunPod REST/serverless client: standard library only (no `pip install`).
 #
 # Used by launcher.py to: run a serverless endpoint, and (advanced) create a
 # template + endpoint to deploy MRT2 as a pay-per-use serverless worker.
@@ -31,13 +31,13 @@ def _request(url, api_key, method="POST", body=None, timeout=120):
 
 # ----- running an existing serverless endpoint ------------------------------
 def run_sync(endpoint_id, api_key, input_dict, timeout=300):
-    """POST /v2/{id}/runsync — wait for the worker and return its output."""
+    """POST /v2/{id}/runsync: wait for the worker and return its output."""
     return _request(f"{RUN_BASE}/{endpoint_id}/runsync", api_key,
                     body={"input": input_dict}, timeout=timeout)
 
 
 def run_async(endpoint_id, api_key, input_dict):
-    """POST /v2/{id}/run — returns a job id to poll with status()."""
+    """POST /v2/{id}/run: returns a job id to poll with status()."""
     return _request(f"{RUN_BASE}/{endpoint_id}/run", api_key, body={"input": input_dict})
 
 
@@ -51,7 +51,7 @@ def health(endpoint_id, api_key):
 
 # ----- deploying a new serverless endpoint (advanced) -----------------------
 def create_template(api_key, name, image, container_disk_gb=20, env=None, ports="8000/http"):
-    """POST /v1/templates — a reusable image+config a serverless endpoint runs."""
+    """POST /v1/templates: a reusable image+config a serverless endpoint runs."""
     body = {
         "name": name,
         "imageName": image,
@@ -66,7 +66,7 @@ def create_template(api_key, name, image, container_disk_gb=20, env=None, ports=
 def create_endpoint(api_key, name, template_id, gpu_type_ids=None,
                     workers_min=0, workers_max=2, idle_timeout=10,
                     flashboot=True, execution_timeout_ms=600000):
-    """POST /v1/endpoints — pay-per-use endpoint. workers_min=0 => scale to zero."""
+    """POST /v1/endpoints: pay-per-use endpoint. workers_min=0 => scale to zero."""
     body = {
         "name": name,
         "templateId": template_id,

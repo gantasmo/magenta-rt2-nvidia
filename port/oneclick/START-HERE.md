@@ -1,4 +1,4 @@
-# MRT2 Studio — Start Here
+# MRT2 Studio: Start Here
 
 Type a prompt, press Generate, and an original track plays in your browser.
 
@@ -38,5 +38,5 @@ at `http://localhost:8777`. The model is `mrt2_small`. First-time WSL2 setup is 
 
 - The status line at the top shows what the engine is doing. On first launch, give the
   model a minute to load.
-- Click **▶** on the player once if you hear nothing — browsers require a click before audio.
+- Click **▶** on the player once if you hear nothing. Browsers require a click before audio.
 - Click **⏻ Quit** to stop the engine.

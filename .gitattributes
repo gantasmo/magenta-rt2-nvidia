@@ -1,7 +1,7 @@
 # Default: let git normalize text files on commit.
 * text=auto
 
-# Shell scripts MUST stay LF — they run inside WSL2/Linux and break with CRLF.
+# Shell scripts MUST stay LF: they run inside WSL2/Linux and break with CRLF.
 *.sh text eol=lf
 
 # Windows scripts stay CRLF.

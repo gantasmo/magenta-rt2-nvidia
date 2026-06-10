@@ -1,16 +1,16 @@
 # Magenta RealTime 2 → NVIDIA port kit
 
 Goal: run MRT2 on NVIDIA (RunPod **or** a local 4090), targeting the **native
-C++ engine** (Path C) — the same engine the macOS `.app` bundles in this folder
+C++ engine** (Path C), the same engine the macOS `.app` bundles in this folder
 are built from.
 
 ## Why this is feasible (the short version)
 
-The `.app` bundles you have are **arm64 + Metal/MLX** — not portable. But they're
+The `.app` bundles you have are **arm64 + Metal/MLX**, not portable. But they're
 built from the **open-source** [`magenta/magenta-realtime`](https://github.com/magenta/magenta-realtime)
 repo, whose C++ inference library (`core/`) is **already cross-platform**:
 
-- `mlx_engine.cpp` (2,658 lines) uses **only the portable MLX C++ API** — no Metal,
+- `mlx_engine.cpp` (2,658 lines) uses **only the portable MLX C++ API**, no Metal,
   no Objective-C. MLX now has a **native CUDA backend** (`-DMLX_BUILD_CUDA=ON`).
 - The only Apple code in `core/` is an autorelease-pool shim that's already
   `#if defined(__APPLE__)` → a **no-op on Linux**.
@@ -34,7 +34,7 @@ the two CUDA ops this model needs: **quantized matmul** (depthformer is exported
 
 ---
 
-## Layer 0 — prove the model on your GPU *today* (zero risk, Google-official)
+## Layer 0: prove the model on your GPU *today* (zero risk, Google-official)
 
 No C++ build. Confirms the weights + your CUDA stack work.
 
@@ -45,7 +45,7 @@ mrt models init && mrt models download mrt2_small
 mrt jax generate --prompt "disco funk" --duration 4.0 --model=mrt2_small
 ```
 
-## Layer 1 — prove the *MLX graph* runs on CUDA (de-risks Path C)
+## Layer 1: prove the *MLX graph* runs on CUDA (de-risks Path C)
 
 The C++ engine runs the same MLX computation as the Python MLX backend. Testing
 the Python MLX-CUDA path first tells us whether every op has a CUDA kernel,
@@ -59,7 +59,7 @@ mrt mlx generate --prompt "disco funk" --duration 4.0 --model=mrt2_small
 If this works, Path C is essentially guaranteed. If a specific op errors, that's
 exactly the op we patch or CPU-fallback in Layer 2 (see Risks).
 
-## Layer 2 — the native C++ engine on CUDA  ★ the prize
+## Layer 2: the native C++ engine on CUDA  ★ the prize
 
 ### On RunPod
 1. Launch a pod with a **CUDA 12.x *devel*** template (needs `nvcc`), any NVIDIA GPU.
@@ -77,12 +77,12 @@ Same commands with `CMAKE_CUDA_ARCHITECTURES=89`. Local is the better target for
 **true real-time** later (no network latency in the audio loop).
 
 ### Validate correctness vs. the Mac build
-The repo ships its own oracle — generate the same prompt/seed and diff:
+The repo ships its own oracle. Generate the same prompt/seed and diff:
 ```bash
 python scripts/compare_python_n_cpp.py     # compares Python ref vs C++ engine output
 ```
 
-## Layer 3 — the product (interactive, browser-based)
+## Layer 3: the product (interactive, browser-based)
 
 Built and ready in [`server/`](server/): a **backend-agnostic streaming server** +
 a dependency-free **browser client**. It wraps the official `magenta_rt`
@@ -108,7 +108,7 @@ via Web Audio and shows the real-time factor.
 - **Local 4090:** same command; localhost has no network latency in the loop.
 - **Native engine later:** point the same `generate()`-style loop at `magentart::core`
   (`RealtimeRunner` already has the audio-thread ring buffer + MIDI gate). Only
-  `mrt2_server.py`'s `load_model`/`generate` calls change — the client stays as-is.
+  `mrt2_server.py`'s `load_model`/`generate` calls change. The client stays as-is.
 - **Full original UI:** the React UI is in your bundle
   ([jam_ui/index.html](../MRT2%20Bundle/MRT2%20-%20Jam.app/Contents/Resources/jam_ui/index.html))
   and source (`examples/common/react_ui/`). It speaks a `window.webkit…postMessage`
@@ -119,23 +119,23 @@ via Web Audio and shows the real-time factor.
 
 ## Risks & fallbacks (honest)
 
-- **MLX-CUDA op coverage** — *the* risk. Layer 1 surfaces it cheaply. If an op is
+- **MLX-CUDA op coverage**: *the* risk. Layer 1 surfaces it cheaply. If an op is
   missing on CUDA, options: bump MLX to a newer patch, run that op on the MLX CPU
   stream (`mx.cpu`), or add a small CUDA kernel. Quantized-matmul + FFT (the likely
   suspects) are covered as of v0.31.2.
-- **`.mlxfn` was exported on a Mac** — it's a backend-agnostic op graph + weights,
+- **`.mlxfn` was exported on a Mac**: it's a backend-agnostic op graph + weights,
   so it should load on CUDA. If it doesn't, re-export portably on the box:
   `mrt checkpoints download` then `mrt mlx export --output-name=mrt2_small --bits=8`
   (the exporter is pure MLX-Python and runs on CPU-MLX anywhere).
-- **CUDA toolkit version** — MLX has had build friction on some CUDA minors. The
+- **CUDA toolkit version**: MLX has had build friction on some CUDA minors. The
   Dockerfile pins **CUDA 12.6**; if MLX fails to compile, try a 12.4 or 12.8 devel
   base. Driver must satisfy the toolkit (CUDA 13 wheels want driver ≥ 580).
-- **cmake version** — upstream pins `cmake<3.28`; the Dockerfile honors it.
+- **cmake version**: upstream pins `cmake<3.28`; the Dockerfile honors it.
 
 ## Files
-- `patch_cmake.py` — idempotent, anchor-checked CMake patcher (aborts if upstream drifts)
-- `build_cuda.sh` — clone → patch → configure → build `hello_mrt2`
-- `run_demo.sh` — download weights → generate a `.wav`, prints an RTF (real-time factor) check
-- `Dockerfile` — reproducible RunPod / local CUDA build environment
-- `server/mrt2_server.py` — streaming WebSocket server (JAX backend now, C++ engine later)
-- `server/client.html` — dependency-free browser client (gapless Web Audio + live controls)
+- `patch_cmake.py`: idempotent, anchor-checked CMake patcher (aborts if upstream drifts)
+- `build_cuda.sh`: clone → patch → configure → build `hello_mrt2`
+- `run_demo.sh`: download weights → generate a `.wav`, prints an RTF (real-time factor) check
+- `Dockerfile`: reproducible RunPod / local CUDA build environment
+- `server/mrt2_server.py`: streaming WebSocket server (JAX backend now, C++ engine later)
+- `server/client.html`: dependency-free browser client (gapless Web Audio + live controls)

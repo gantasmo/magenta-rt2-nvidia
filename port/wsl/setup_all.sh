@@ -13,11 +13,11 @@ ASSETS="$HOME/Documents/Magenta/magenta-rt-v2"
 CKPT="$ASSETS/checkpoints/mrt2_small.safetensors"
 mkdir -p "$WORK"
 
-# --- 0. GPU passthrough sanity (warn, don't fail — CPU still imports) ----------
+# --- 0. GPU passthrough sanity (warn, don't fail; CPU still imports) ----------
 if [ -e /usr/lib/wsl/lib/libcuda.so ] || [ -e /usr/lib/wsl/lib/libcuda.so.1 ]; then
   say "GPU passthrough: libcuda present"
 else
-  say "WARNING: /usr/lib/wsl/lib/libcuda.so not found — update your NVIDIA driver on Windows."
+  say "WARNING: /usr/lib/wsl/lib/libcuda.so not found. Update your NVIDIA driver on Windows."
 fi
 
 # --- 1. uv ---------------------------------------------------------------------
@@ -51,7 +51,7 @@ PY
 if deps_ok; then
   say "python deps already present"
 else
-  say "installing python deps (magenta-rt, jax[cuda12], numpy, soundfile) — large download, please wait"
+  say "installing python deps (magenta-rt, jax[cuda12], numpy, soundfile), large download, please wait"
   "$UV" pip install --python "$PY" "magenta-rt" "jax[cuda12]" numpy soundfile || \
     fail "pip install failed (check internet connection and disk space)"
   deps_ok || fail "deps still missing after install"

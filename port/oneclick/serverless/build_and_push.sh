@@ -3,7 +3,7 @@
 #
 #   ./build_and_push.sh USER/mrt2-serverless:small [mrt2_small|mrt2_base]
 #
-# `docker login` credentials live in your local docker config — NEVER in this
+# `docker login` credentials live in your local docker config, NEVER in this
 # repo. Nothing here writes secrets to git.
 set -euo pipefail
 IMAGE="${1:?usage: build_and_push.sh <user/image:tag> [model]}"

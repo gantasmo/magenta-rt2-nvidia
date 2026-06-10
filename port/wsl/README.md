@@ -27,12 +27,12 @@ it to this folder's `output/`. Other parameters are on the CLI directly
 
 Run the scripts in this folder in order:
 
-1. `probe.sh` — checks GPU passthrough, Python, disk, and build tools.
-2. `install.sh` — installs `uv`, creates the venv, installs `magenta-rt`, `jax[cuda12]`,
+1. `probe.sh`: checks GPU passthrough, Python, disk, and build tools.
+2. `install.sh`: installs `uv`, creates the venv, installs `magenta-rt`, `jax[cuda12]`,
    and `numpy`, then prints `jax.devices()`.
-3. `download.sh` — `mrt models init` (MusicCoCa + SpectroStream).
-4. `download2.sh` — `mrt checkpoints download mrt2_small.safetensors`.
-5. `generate.sh` — runs `mrt jax generate` and copies the output wav to `output/`.
+3. `download.sh`: `mrt models init` (MusicCoCa + SpectroStream).
+4. `download2.sh`: `mrt checkpoints download mrt2_small.safetensors`.
+5. `generate.sh`: runs `mrt jax generate` and copies the output wav to `output/`.
 
 `discover.sh`, `discover2.sh`, `inspect_paths.sh`, `list_repo.sh`, and `verify_wav.sh` are
 diagnostics.

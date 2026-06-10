@@ -1,4 +1,4 @@
-# MRT2 Studio — one-click launcher
+# MRT2 Studio: one-click launcher
 
 Double-click `MRT2-Studio.bat` (or `studio\MRT2-Studio.vbs`). The music engine starts in
 WSL2 on your NVIDIA GPU and your browser opens to the Studio. Type a prompt, press

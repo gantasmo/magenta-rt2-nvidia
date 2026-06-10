@@ -26,7 +26,7 @@ echo "==> Patching CMake for Linux/CUDA"
 python3 "${PORT_DIR}/patch_cmake.py" "${MRT_SRC}"
 
 cd "${MRT_SRC}"
-echo "==> Configuring (this fetches + builds MLX w/ CUDA, TFLite, sentencepiece — slow first time)"
+echo "==> Configuring (this fetches + builds MLX w/ CUDA, TFLite, sentencepiece, slow first time)"
 cmake . -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
   -DMLX_BUILD_CUDA=ON \
@@ -37,5 +37,5 @@ echo "==> Building hello_mrt2 (pulls in magentart_core)"
 cmake --build build --target hello_mrt2 -j"${JOBS}"
 
 echo ""
-echo "==> SUCCESS: $(ls -la "${MRT_SRC}/build/examples/hello_mrt2/hello_mrt2" 2>/dev/null || echo 'binary not found — check log above')"
+echo "==> SUCCESS: $(ls -la "${MRT_SRC}/build/examples/hello_mrt2/hello_mrt2" 2>/dev/null || echo 'binary not found, check log above')"
 echo "    Next: ${PORT_DIR}/run_demo.sh \"a jazz piano trio\" mrt2_small"

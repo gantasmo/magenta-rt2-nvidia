@@ -1,7 +1,7 @@
 # RunPod serverless image for Magenta RealTime 2 (JAX/CUDA).
 #
 # Build for a specific model (mrt2_small bakes a ~1.1 GB checkpoint; mrt2_base
-# bakes ~9.8 GB — bigger image, slower cold start, but no per-run download):
+# bakes ~9.8 GB, bigger image, slower cold start, but no per-run download):
 #   docker build --build-arg MRT2_MODEL=mrt2_small -t USER/mrt2-serverless:small .
 #   docker push USER/mrt2-serverless:small
 FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04

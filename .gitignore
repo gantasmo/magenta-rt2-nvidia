@@ -46,4 +46,4 @@ repomix-output.md
 # ── Original macOS app bundle (third-party binaries, ~384 MB) ──
 /MRT2 Bundle/
 
-# port_src/ is a git submodule (magenta/magenta-realtime) — tracked, not ignored.
+# port_src/ is a git submodule (magenta/magenta-realtime), tracked, not ignored.
