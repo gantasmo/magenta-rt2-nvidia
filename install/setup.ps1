@@ -185,7 +185,7 @@ try{
 # --- Is the Linux engine already set up? (best-effort, only if Ubuntu exists) ---
 $engineReady = $false
 if($ubuntuOk){
-  $probe = (& wsl.exe -d $ubuntuName -- bash -lc "test -f ~/Documents/Magenta/magenta-rt-v2/checkpoints/mrt2_small.safetensors && ~/mrt2/.venv/bin/python -c 'import jax,magenta_rt,soundfile' 2>/dev/null && echo READY") 2>$null
+  $probe = (& wsl.exe -d $ubuntuName -- bash -lc "test -f ~/Documents/Magenta/magenta-rt-v2/checkpoints/mrt2_small.safetensors && ~/mrt2/.venv/bin/python -c 'import jax,magenta_rt,soundfile,fastapi,uvicorn' 2>/dev/null && echo READY") 2>$null
   if($probe -match 'READY'){ $engineReady = $true; OK "Music engine + model already installed" }
   else{ WARN "Music engine / model not fully installed yet"; [void]$todo.Add("Python engine + CUDA libraries (~3 GB) and the music model (~1.1 GB)") }
 }

@@ -45,16 +45,24 @@ fi
 # --- 3. python deps (only if a required import is missing) ---------------------
 deps_ok(){ "$PY" - <<'PY' >/dev/null 2>&1
 import importlib
-for m in ("jax","jaxlib","magenta_rt","numpy","soundfile"):
+for m in ("jax","jaxlib","magenta_rt","numpy","soundfile","fastapi","uvicorn","multipart"):
     importlib.import_module(m)
 PY
 }
 if deps_ok; then
   say "python deps already present"
 else
-  say "installing the latest engine stack (magenta-rt, jax[cuda12], numpy, soundfile), large download, please wait"
-  "$UV" pip install --python "$PY" -U "magenta-rt" "jax[cuda12]" "numpy" "soundfile" || \
+  say "installing the latest engine stack (magenta-rt, jax[cuda12], numpy, soundfile, web server), large download, please wait"
+  "$UV" pip install --python "$PY" -U "magenta-rt" "jax[cuda12]" "numpy" "soundfile" \
+      "fastapi" "uvicorn" "python-multipart" || \
     fail "pip install failed (check internet connection and disk space)"
+  # theDAW's extended sidecar (sidecars/magenta/server.py) runs in this same
+  # venv; its requirements file is the source of truth when we're in the repo.
+  REQS="$HERE/../../magenta/requirements.txt"
+  if [ -f "$REQS" ]; then
+    "$UV" pip install --python "$PY" -r "$REQS" || \
+      fail "pip install failed for the theDAW sidecar requirements"
+  fi
   deps_ok || fail "deps still missing after install"
 fi
 
