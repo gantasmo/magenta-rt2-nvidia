@@ -1,6 +1,6 @@
 <h1 align="center">magenta-rt2-nvidia</h1>
 
-<p align="center"><strong>by <a href="https://github.com/gantasmo">GANTASMO</a></strong></p>
+<p align="center"><strong>by <a href="https://gantasmo.com">GANTASMO</a></strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/port-Magenta%20RealTime%202-4285F4?logo=google&logoColor=white" alt="Magenta RealTime 2 port">
@@ -27,7 +27,7 @@ real-time engine inside [theDAW](https://github.com/gantasmo/theDAW), where it i
 
 New to "WSL"? The installer turns it on for you. Full walkthrough: **[INSTALL.md](INSTALL.md)**.
 
-## Get started (easiest, no terminal)
+## Quickstart
 
 1. **[Download the latest release ZIP](../../releases/latest)** (`MRT2-Studio.zip`).
 2. Unzip it anywhere (your Desktop is fine).
@@ -51,9 +51,9 @@ Every track is also saved to `app\output\`.
 
 <p align="center"><img src="docs/studio-mobile.png" alt="MRT2 Studio on a phone" width="320"></p>
 
-> ## Read this if you're cloning or using GitHub's "Download ZIP"
+> ## Cloning
 > This project links the upstream engine source as a **git submodule** (`port_src/`).
-> GitHub's green **Code → Download ZIP** button and a plain `git clone` leave that folder
+> GitHub's green **Code > Download ZIP** button and a plain `git clone` leave that folder
 > **empty**.
 >
 > **The app does not require `port_src/`.** The simple fix, no terminal required:
