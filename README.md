@@ -1,11 +1,20 @@
-# magenta-rt2-nvidia
+<h1 align="center">magenta-rt2-nvidia</h1>
+
+<p align="center"><strong>by <a href="https://github.com/gantasmo">GANTASMO</a></strong></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/port-Magenta%20RealTime%202-4285F4?logo=google&logoColor=white" alt="Magenta RealTime 2 port">
+  <img src="https://img.shields.io/badge/runtime-WSL2%20%2B%20JAX%20%2B%20NVIDIA-EE4C2C?logo=nvidia&logoColor=white" alt="WSL2, JAX, NVIDIA">
+  <a href="https://github.com/gantasmo/theDAW"><img src="https://img.shields.io/badge/sidecar%20of-theDAW-7C3AED" alt="Sidecar of theDAW"></a>
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+</p>
 
 NVIDIA/CUDA port of Magenta RealTime 2: a one-click local studio that runs `mrt2_small`
 on a WSL2 GPU via JAX and serves a browser UI for prompt-to-audio generation (48 kHz
-stereo, ~2× real-time). Includes WSL2 setup scripts and an optional RunPod serverless
-path for `mrt2_base`.
-
-Made by **[GANTASMO](https://gantasmo.com)**.
+stereo, roughly 2x real-time). Includes WSL2 setup scripts and an optional RunPod serverless
+path for `mrt2_base`. It is the first non-Mac port of MRT2, and it powers the **Generate**
+real-time engine inside [theDAW](https://github.com/gantasmo/theDAW), where it is vendored at
+`sidecars/magenta-rt2-nvidia`.
 
 ![MRT2 Studio: type a prompt, press Generate, and an original track plays](docs/studio.png)
 
@@ -18,7 +27,7 @@ Made by **[GANTASMO](https://gantasmo.com)**.
 
 New to "WSL"? The installer turns it on for you. Full walkthrough: **[INSTALL.md](INSTALL.md)**.
 
-## ⬇️ Get started (easiest, no terminal)
+## Get started (easiest, no terminal)
 
 1. **[Download the latest release ZIP](../../releases/latest)** (`MRT2-Studio.zip`).
 2. Unzip it anywhere (your Desktop is fine).
@@ -42,7 +51,7 @@ Every track is also saved to `app\output\`.
 
 <p align="center"><img src="docs/studio-mobile.png" alt="MRT2 Studio on a phone" width="320"></p>
 
-> ## ⚠️ Read this if you're cloning or using GitHub's "Download ZIP"
+> ## Read this if you're cloning or using GitHub's "Download ZIP"
 > This project links the upstream engine source as a **git submodule** (`port_src/`).
 > GitHub's green **Code → Download ZIP** button and a plain `git clone` leave that folder
 > **empty**.
@@ -82,3 +91,15 @@ MRT2 Studio is an NVIDIA/CUDA port of [Magenta RealTime 2](https://github.com/ma
 built by [GANTASMO](https://gantasmo.com) as part of [theDAW](https://github.com/gantasmo). It was created
 at the [Music Hackspace](https://musichackspace.org/) [Music Technology Hackathon](https://musichackspace.org/events/hackathon-boston-june-2026)
 at Berklee College of Music.
+
+---
+
+<p align="center">
+  <a href="https://open.spotify.com/artist/4q5n0QgK6mvyuw8FRzhuNA"><img src="https://img.shields.io/badge/Listen-Spotify-1DB954?logo=spotify&logoColor=white" alt="Listen on Spotify"></a>
+  <a href="https://www.youtube.com/@GANTASMO"><img src="https://img.shields.io/badge/Watch-YouTube-FF0000?logo=youtube&logoColor=white" alt="Watch on YouTube"></a>
+  <a href="https://www.instagram.com/gantasmo"><img src="https://img.shields.io/badge/Follow-%40gantasmo-E4405F?logo=instagram&logoColor=white" alt="Follow @gantasmo on Instagram"></a>
+  <a href="https://x.com/gantasmo"><img src="https://img.shields.io/badge/Follow-%40gantasmo-000000?logo=x&logoColor=white" alt="Follow @gantasmo on X"></a>
+  <a href="https://gantasmo.com"><img src="https://img.shields.io/badge/Learn%20More-gantasmo.com-7C3AED?logo=googlechrome&logoColor=white" alt="Learn more at gantasmo.com"></a>
+</p>
+
+<p align="center"><sub>A sidecar of <a href="https://github.com/gantasmo/theDAW">theDAW</a>, made by <a href="https://github.com/danieljtrujillo">Daniel Joaquin Trujillo</a> and <a href="https://github.com/StarskreamEXE">Josh Valenzuela</a> as GANTASMO.</sub></p>
