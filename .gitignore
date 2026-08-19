@@ -43,6 +43,7 @@ __MACOSX/
 # ── Internal-only docs (kept locally, not published) ──
 ASSESSMENT.md
 repomix-output.md
+AGENTS.local.md
 
 # ── Original macOS app bundle (third-party binaries, ~384 MB) ──
 /MRT2 Bundle/

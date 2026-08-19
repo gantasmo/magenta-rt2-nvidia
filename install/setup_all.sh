@@ -54,7 +54,7 @@ if deps_ok; then
 else
   say "installing the latest engine stack (magenta-rt, jax[cuda12], numpy, soundfile, web server), large download, please wait"
   "$UV" pip install --python "$PY" -U "magenta-rt" "jax[cuda12]" "numpy" "soundfile" \
-      "fastapi" "uvicorn" "python-multipart" || \
+      "fastapi" "uvicorn" "python-multipart" "mido" || \
     fail "pip install failed (check internet connection and disk space)"
   # theDAW's extended sidecar (sidecars/magenta/server.py) runs in this same
   # venv; its requirements file is the source of truth when we're in the repo.
