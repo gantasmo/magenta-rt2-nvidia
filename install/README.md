@@ -7,7 +7,7 @@ JAX/CUDA backend.
 
 - WSL2 Ubuntu, Python 3.12, a uv-managed venv at `~/mrt2/.venv`.
 - JAX with the CUDA plugin (`jax.devices()` reports a `CudaDevice`).
-- `magenta-rt` 2.0.2.
+- `magenta-rt` 2.0.3.
 - Model assets in `~/Documents/Magenta/magenta-rt-v2/` (MusicCoCa + SpectroStream
   resources and `checkpoints/mrt2_small.safetensors`).
 

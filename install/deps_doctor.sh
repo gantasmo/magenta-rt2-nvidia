@@ -24,7 +24,7 @@ say(){ echo "[doctor] $*"; }
 
 # Known-good floor: the last stack a human verified. Used only as a fallback,
 # so a broken upstream release never bricks a fresh install. Bump deliberately.
-FLOOR=( "magenta-rt==2.0.2" "jax[cuda12]==0.10.1" "numpy==2.3.5" "soundfile==0.14.0" )
+FLOOR=( "magenta-rt==2.0.3" "jax[cuda12]==0.11.1" "numpy==2.3.5" "soundfile==0.14.0" )
 # Latest line: same packages, unpinned, upgraded to the newest compatible build.
 LATEST=( "magenta-rt" "jax[cuda12]" "numpy" "soundfile" )
 
