@@ -38,11 +38,12 @@ import sys
 try:
     import jax, numpy as np, soundfile  # noqa: F401
     from magenta_rt import MagentaRT2Jax
+    from magenta_rt.config import MUSICCOCA
     if not jax.devices():
         print("VERIFY_FAIL: no JAX devices"); sys.exit(1)
     mrt = MagentaRT2Jax(size="mrt2_small")
     emb = mrt.embed_style("dependency doctor check", use_mapper=True)
-    wav, _ = mrt.generate(style=emb, frames=25)
+    wav, _ = mrt.generate(conditioning={MUSICCOCA.key: emb}, frames=25)
     s = np.asarray(wav.samples, dtype="float32")
     ok = s.size > 0 and bool(np.isfinite(s).all()) and float(np.abs(s).max()) > 1e-4
     print("VERIFY_OK" if ok else "VERIFY_FAIL: silent or NaN output")

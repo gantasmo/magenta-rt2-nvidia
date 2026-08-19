@@ -27,6 +27,7 @@ import time
 import traceback
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from magenta_rt.config import MUSICCOCA
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, "index.html")
@@ -104,7 +105,7 @@ class Engine:
             # Warm up: embed + one short generate so the first real click is fast.
             self.status = "warming up the musician"
             emb = self.mrt.embed_style("warm up", use_mapper=True)
-            self.mrt.generate(style=emb, frames=FPS)   # compiles init_state + step
+            self.mrt.generate(conditioning={MUSICCOCA.key: emb}, frames=FPS)   # compiles init_state + step
             self.warm_seconds = time.time() - t0
             self.ready = True
             self.status = "ready"
@@ -170,24 +171,39 @@ class Engine:
             if prev is not None and prev.get("key") == key:
                 emb = prev["emb"]                 # same vibe, keep the embedding
             state = prev["state"] if prev is not None else None
-            gkw = dict(style=emb, frames=frames, state=state,
-                       temperature=float(temperature), top_k=int(top_k),
-                       cfg_musiccoca=float(cfg_musiccoca), cfg_notes=float(cfg_notes),
-                       cfg_drums=float(cfg_drums), drums=[int(drums)])
+            # New magenta-rt (MagentaRT2Jax == MagentaRT2System) contract:
+            #   generate(conditioning: dict, cfg_scales: dict, temperature,
+            #            top_k, frames, state)  -- no more style=/drums=/cfg_* kwargs.
+            # Conditioning keys come from model.input_configs; the style embedding is
+            # passed raw under MUSICCOCA.key and tokenized by the library.
+            cond = {MUSICCOCA.key: emb}
             if notes:
-                # Confirmed from magenta_rt jax/system.py generate() docstring:
                 # notes is 128 ints (one per MIDI pitch 0-127). Per-slot state:
-                #   -1 masked/unconstrained, 0 off, 1 on (sustain), 2 onset,
+                #   -1 unconstrained, 0 off, 1 on (sustain), 2 onset,
                 #   3 on (model free to play as onset or continuation).
+                # Maps to the 'pianoroll_with_onsets_tokens' conditioning channel.
                 nn = [int(n) for n in notes]
                 if len(nn) == 128:
-                    gkw["notes"] = nn                  # caller supplied the full 128-vector
+                    vec = nn                              # caller supplied the full 128-vector
                 else:
-                    vec = [-1] * 128                   # default: every pitch unconstrained
+                    vec = [-1] * 128                     # default: every pitch unconstrained
                     for n in nn:
                         if 0 <= n < 128:
-                            vec[n] = 3                 # 3 = play this pitch (model's freedom)
-                    gkw["notes"] = vec
+                            vec[n] = 3                   # 3 = play this pitch (model's freedom)
+                cond["pianoroll_with_onsets_tokens"] = vec
+            # drums: -1 auto / 0 off / 1 on -> single 'drum_pianoroll_tokens' channel.
+            # 0 = dry/off, 1 = drums on; -1 (auto) omits the token so the model decides.
+            if int(drums) == 0:
+                cond["drum_pianoroll_tokens"] = [0]
+            elif int(drums) == 1:
+                cond["drum_pianoroll_tokens"] = [1]
+            # -1 auto -> leave the key out (unconditioned)
+            gkw = dict(conditioning=cond,
+                       cfg_scales={"musiccoca": float(cfg_musiccoca),
+                                   "notes": float(cfg_notes),
+                                   "drums": float(cfg_drums)},
+                       temperature=float(temperature), top_k=int(top_k),
+                       frames=frames, state=state)
             wav, new_state = self.mrt.generate(**gkw)
             compute = time.time() - t0
             seg = np.asarray(wav.samples, dtype=np.float32)   # [N, 2] in [-1, 1]

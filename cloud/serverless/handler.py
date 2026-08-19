@@ -16,6 +16,7 @@ import numpy as np
 import runpod
 
 from magenta_rt import MagentaRT2Jax
+from magenta_rt.config import MUSICCOCA
 
 _MODELS = {}
 
@@ -47,15 +48,25 @@ def handler(job):
     mrt = get_model(size)
     emb = mrt.embed_style(i.get("prompt", "warm analog pads"), use_mapper=True)
 
+    drums = int(i.get("drums", -1))
+    cond = {MUSICCOCA.key: emb}
+    # drums: -1 auto / 0 off / 1 on -> single 'drum_pianoroll_tokens' channel.
+    # 0 = dry/off, 1 = drums on; -1 (auto) omits the token so the model decides.
+    if drums == 0:
+        cond["drum_pianoroll_tokens"] = [0]
+    elif drums == 1:
+        cond["drum_pianoroll_tokens"] = [1]
     t0 = time.time()
     wav, _ = mrt.generate(
-        style=emb, frames=frames,
+        conditioning=cond,
+        frames=frames,
         temperature=float(i.get("temperature", 1.3)),
         top_k=int(i.get("top_k", 40)),
-        cfg_musiccoca=float(i.get("cfg_musiccoca", 3.0)),
-        cfg_notes=float(i.get("cfg_notes", 1.0)),
-        cfg_drums=float(i.get("cfg_drums", 1.0)),
-        drums=[int(i.get("drums", -1))],
+        cfg_scales={
+            "musiccoca": float(i.get("cfg_musiccoca", 3.0)),
+            "notes": float(i.get("cfg_notes", 1.0)),
+            "drums": float(i.get("cfg_drums", 1.0)),
+        },
     )
     dt = time.time() - t0
 
