@@ -22,6 +22,7 @@ import time
 
 import numpy as np
 import websockets
+from magenta_rt.config import MUSICCOCA
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("mrt2_server")
@@ -61,8 +62,11 @@ class Session:
             size=self.args.model,
             temperature=self.params["temperature"],
             top_k=self.params["top_k"],
-            cfg_musiccoca=self.params["cfg_musiccoca"],
-            cfg_notes=self.params["cfg_notes"],
+            cfg_scales={
+                "musiccoca": self.params["cfg_musiccoca"],
+                "notes": self.params["cfg_notes"],
+                "drums": self.params["cfg_drums"],
+            },
         )
         log.info("Embedding initial prompt: %r", self.prompt)
         self.embedding = self.mrt.embed_style(self.prompt, use_mapper=True)
@@ -104,17 +108,26 @@ class Session:
                     self.mrt.embed_style, self.prompt, True)
 
             t0 = time.time()
+            drums = int(self.params["drums"])
+            cond = {MUSICCOCA.key: self.embedding}
+            # drums: -1 auto / 0 off / 1 on -> single 'drum_pianoroll_tokens' channel.
+            # 0 = dry/off, 1 = drums on; -1 (auto) omits the token so the model decides.
+            if drums == 0:
+                cond["drum_pianoroll_tokens"] = [0]
+            elif drums == 1:
+                cond["drum_pianoroll_tokens"] = [1]
             wav, self.state = await asyncio.to_thread(
                 self.mrt.generate,
-                style=self.embedding,
+                conditioning=cond,
                 frames=chunk_frames,
                 state=self.state,
                 temperature=self.params["temperature"],
                 top_k=self.params["top_k"],
-                cfg_musiccoca=self.params["cfg_musiccoca"],
-                cfg_notes=self.params["cfg_notes"],
-                cfg_drums=self.params["cfg_drums"],
-                drums=[int(self.params["drums"])],
+                cfg_scales={
+                    "musiccoca": self.params["cfg_musiccoca"],
+                    "notes": self.params["cfg_notes"],
+                    "drums": self.params["cfg_drums"],
+                },
             )
             compute_s = time.time() - t0
 

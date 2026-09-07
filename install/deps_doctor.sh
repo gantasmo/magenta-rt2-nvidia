@@ -24,7 +24,7 @@ say(){ echo "[doctor] $*"; }
 
 # Known-good floor: the last stack a human verified. Used only as a fallback,
 # so a broken upstream release never bricks a fresh install. Bump deliberately.
-FLOOR=( "magenta-rt==2.0.2" "jax[cuda12]==0.10.1" "numpy==2.3.5" "soundfile==0.14.0" )
+FLOOR=( "magenta-rt==2.0.3" "jax[cuda12]==0.11.1" "numpy==2.3.5" "soundfile==0.14.0" )
 # Latest line: same packages, unpinned, upgraded to the newest compatible build.
 LATEST=( "magenta-rt" "jax[cuda12]" "numpy" "soundfile" )
 
@@ -38,11 +38,12 @@ import sys
 try:
     import jax, numpy as np, soundfile  # noqa: F401
     from magenta_rt import MagentaRT2Jax
+    from magenta_rt.config import MUSICCOCA
     if not jax.devices():
         print("VERIFY_FAIL: no JAX devices"); sys.exit(1)
     mrt = MagentaRT2Jax(size="mrt2_small")
     emb = mrt.embed_style("dependency doctor check", use_mapper=True)
-    wav, _ = mrt.generate(style=emb, frames=25)
+    wav, _ = mrt.generate(conditioning={MUSICCOCA.key: emb}, frames=25)
     s = np.asarray(wav.samples, dtype="float32")
     ok = s.size > 0 and bool(np.isfinite(s).all()) and float(np.abs(s).max()) > 1e-4
     print("VERIFY_OK" if ok else "VERIFY_FAIL: silent or NaN output")

@@ -12,6 +12,7 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv
 
 # ── Model weights & generated audio (large) ──
 *.safetensors
@@ -50,3 +51,6 @@ repomix-output.md
 
 # ── Local archive of removed/leftover files (kept locally, not tracked) ──
 _archive/
+
+AGENTS.md
+AGENTS.local.md
