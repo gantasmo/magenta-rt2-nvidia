@@ -43,6 +43,13 @@ After the first time, just double-click **`MRT2-Studio.bat`** in the main folder
 - **Generate** from a text prompt. Length up to 3 minutes, plus temperature, top-k, style strength, and melody strength.
 - **Extend / morph**: continue the current piece seamlessly; change the prompt first and it morphs into a new vibe without a hard cut.
 - **Drums**: Auto / On / Off, with a separate drum-strength control.
+- **MIDI input**: drop a `.mid`/`.midi` file onto the MIDI card (or click **Load MIDI**). Its
+  pitch content overrides the on-screen keyboard and sets the minimum track length from the file's
+  bars/tempo; use **Repeat MIDI ×N** for a bar-aligned longer track (up to 3 minutes). *Melody
+  strength* controls how strongly the MIDI steers the output.
+- **Follow MIDI over time (jam)**: tick the box to make the model follow your MIDI's *timing*, not
+  just its notes. It generates per-frame at MRT2's native 25 Hz and carries the track forward
+  seamlessly — choose a frame step (1 / 4 / 8 frames) and an **Auto‑Strum** toggle.
 - **Live visualizer**: Bars, Wave, or Radial, reacting to the audio in real time.
 - **Player tools**: master volume, loop, per-track download, and a history (kept across reloads) that can be renamed, reused, re-downloaded, or cleared.
 - **Any screen**: a compact, collapsible layout that fits one phone screen and expands on desktop.

@@ -293,6 +293,20 @@
     canvas{height:26vh;max-height:220px}
     #stat{max-width:34vw}
   }
+  .midicard{border:1px solid var(--line,#2a2c44);border-radius:12px;padding:10px;margin-bottom:12px;background:rgba(255,255,255,.02)}
+  .midi-drop{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px dashed var(--line,#2a2c44);border-radius:10px;cursor:pointer;transition:.15s;color:var(--muted,#8b8da8)}
+  .midi-drop:hover{border-color:#7c5cff;color:#cdbcff}
+  .midi-drop.drag{border-color:#7c5cff;background:rgba(124,92,255,.12);color:#cdbcff}
+  .midi-ic{font-size:26px;line-height:1}
+  .midi-tt{font-size:13px;line-height:1.3}
+  .midi-info{margin-top:8px;font-size:12px;color:#cdbcff}
+  .midi-repeat{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .midi-repeat .muted{font-size:11px}
+  .midi-repeat .rep.active{background:#6c5ce7;color:#fff;border-color:#6c5ce7}
+  .midi-jam{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .midi-jam .chk{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#cdbcff}
+  .midi-jam .muted{font-size:11px}
+  .midi-jam select{padding:2px 4px}
 </style>
 </head>
 <body>
@@ -380,6 +394,35 @@
         <!-- Mix & Notes -->
         <div class="pane" id="pane-adv" role="tabpanel">
           <div class="advscroll">
+              <div class="midicard" id="midiCard" data-tip="MIDI — drop a .mid/.midi file here (or click Load MIDI). Its pitch content overrides the keyboard notes and sets the minimum track length (from bars/tempo). Tick 'Follow MIDI over time' to make the model follow the MIDI's timing per-frame at 25 Hz (jam); use Repeat ×N for a bar-aligned longer track. Melody strength controls how strongly the MIDI steers the output.">
+              <div class="midi-drop" id="midiDrop">
+                <span class="midi-ic">🎹</span>
+                <span class="midi-tt">Drop a MIDI file here<br><span class="muted">or click Load MIDI to browse</span></span>
+              </div>
+              <div class="midi-info" id="midiInfo" hidden></div>
+              <div class="midi-repeat" id="midiRepeat" hidden>
+                <span class="muted">Repeat MIDI:</span>
+                <button class="mini rep" data-n="1" type="button">×1</button>
+                <button class="mini rep" data-n="2" type="button">×2</button>
+                <button class="mini rep" data-n="3" type="button">×3</button>
+                <button class="mini rep" data-n="4" type="button">×4</button>
+              </div>
+              <div class="midi-jam" id="midiJam" hidden>
+                <label class="chk"><input type="checkbox" id="followMidi"> Follow MIDI over time <span class="muted">(jam @ 25 Hz)</span></label>
+                <span class="muted">step</span>
+                <select id="jamStep" class="mini">
+                  <option value="1">1 frame · 40 ms</option>
+                  <option value="4">4 frames</option>
+                  <option value="8">8 frames</option>
+                </select>
+                <label class="chk"><input type="checkbox" id="autoStrum" checked> Auto‑Strum</label>
+              </div>
+              <div class="mixadd">
+                <button class="mini" id="addMidi" type="button" data-tip="Pick a .mid/.midi file to steer generation by its notes and length.">🎹 Load MIDI</button>
+                <button class="mini" id="midiClear" type="button" hidden data-tip="Remove the loaded MIDI and go back to the keyboard.">✕ Clear</button>
+                <input type="file" id="midiFile" accept=".mid,.midi,audio/midi" hidden>
+              </div>
+            </div>
             <div class="advcols">
               <div class="advcol">
                 <div class="rowhead"><span class="lbl grow" data-tip="Style mix — blend extra ideas into your style. Add a text vibe or an audio clip, and set how much each one counts with its weight slider.">🎚 Style mix + audio <span class="cnt" id="mixCnt"></span></span></div>
@@ -562,6 +605,8 @@ const fmtTime = s => { s=Math.round(+s); return s<60? s+"s" : Math.floor(s/60)+"
 
 let drumsMode=-1, vizMode="bars", ready=false, loaded=false;
 let mixSources=[]; let noteSet=new Set(); let noteOct=4; let seedVal=null; let genres=new Map();
+let midiB64=null;
+let midiDur=0;   // inferred duration (s) of the loaded MIDI; floor for the Length slider
 const PCS=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
 // ── size the shell to the live window (measured, not assumed) ──
@@ -732,6 +777,56 @@ $("#audioFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return;
   rd.onload=()=>{ const b64=String(rd.result).split(',')[1]||""; mixSources.push({type:'audio',audio_b64:b64,name:f.name,weight:0.6}); renderMix(); };
   rd.readAsDataURL(f); e.target.value=""; };
 
+// ── MIDI (drag-drop / pick) ──
+function loadMidiFile(f){
+  if(!f) return;
+  const name=(f.name||"").toLowerCase();
+  if(!/\.(mid|midi)$/.test(name)){ alert("Please choose a .mid or .midi file."); return; }
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const b64=String(rd.result).split(",")[1]||"";
+    fetch("/midi_info",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({midi:b64})})
+      .then(r=>r.json().then(j=>({ok:r.ok, j})))
+      .then(({ok,j})=>{
+        if(!ok||!j.ok){ alert("Could not read MIDI: "+(j.error||"unknown error")); return; }
+        midiB64=b64;
+        $("#midiInfo").hidden=false;
+        $("#midiInfo").textContent=`MIDI · ${j.bars} bars @ ${Math.round(j.bpm)} BPM · ${j.note_count} notes · min Len ${Math.round(j.duration)}s`;
+        $("#midiClear").hidden=false;
+        const durEl=$("#dur");
+        durEl.min = Math.round(j.duration);     // can't go shorter than the MIDI
+        durEl.value = Math.round(j.duration);   // start at the MIDI's length
+        const vs=durEl.closest(".vslider");
+        if(vs) vs.dataset.tip=`Length — seconds of music (min ${Math.round(j.duration)}s, up to 180). The MIDI sets the floor; drag up for a longer track than the input.`;
+        durEl.dispatchEvent(new Event("input")); // refresh the Len label
+        midiDur=Math.round(j.duration);
+        const rep=$("#midiRepeat"); rep.hidden=false;
+        rep.querySelectorAll(".rep").forEach(b=>b.classList.toggle("active", b.dataset.n==="1"));
+        $("#midiJam").hidden=false;
+      })
+      .catch(err=>alert("MIDI info failed: "+err));
+  };
+  rd.readAsDataURL(f);
+}
+$("#addMidi").onclick=()=>$("#midiFile").click();
+$("#midiFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f)return; loadMidiFile(f); e.target.value=""; };
+$("#midiClear").onclick=()=>{ midiB64=null; midiDur=0; $("#midiInfo").hidden=true; $("#midiInfo").textContent=""; $("#midiClear").hidden=true; $("#midiRepeat").hidden=true; $("#midiJam").hidden=true;
+  const durEl=$("#dur"); durEl.min=4; const vs=durEl.closest(".vslider");
+  if(vs) vs.dataset.tip="Length — how many seconds of music to make (4–180). Longer tracks take more time to generate."; };
+document.querySelectorAll("#midiRepeat .rep").forEach(b=>b.addEventListener("click",()=>{
+  if(!midiDur) return;
+  const n=+b.dataset.n;
+  const sec=Math.min(180, Math.max(midiDur, Math.round(midiDur*n)));
+  const durEl=$("#dur"); durEl.value=sec; durEl.dispatchEvent(new Event("input"));
+  document.querySelectorAll("#midiRepeat .rep").forEach(x=>x.classList.toggle("active", x===b));
+}));
+const midiDrop=$("#midiDrop");
+["dragenter","dragover"].forEach(ev=>midiDrop.addEventListener(ev,e=>{e.preventDefault();midiDrop.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>midiDrop.addEventListener(ev,e=>{e.preventDefault();midiDrop.classList.remove("drag");}));
+midiDrop.addEventListener("drop",e=>{ const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) loadMidiFile(f); });
+midiDrop.addEventListener("click",()=>$("#midiFile").click());
+
 // ── notes / chord ──
 function renderKeys(){
   const box=$("#keys"); box.innerHTML="";
@@ -768,6 +863,13 @@ function buildBody(){
     b.styles=styles;
   }
   if(noteSet.size) b.notes=[...noteSet];
+  if(midiB64) { b.midi=midiB64; delete b.notes;   // MIDI overrides keyboard notes
+    if($("#followMidi").checked){
+      b.follow_midi=true;
+      b.jam_step=+$("#jamStep").value;
+      b.auto_strum=$("#autoStrum").checked;
+    }
+  }
   if(seedVal!=null) b.seed=seedVal;
   return b;
 }

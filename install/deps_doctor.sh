@@ -24,9 +24,9 @@ say(){ echo "[doctor] $*"; }
 
 # Known-good floor: the last stack a human verified. Used only as a fallback,
 # so a broken upstream release never bricks a fresh install. Bump deliberately.
-FLOOR=( "magenta-rt==2.0.3" "jax[cuda12]==0.11.1" "numpy==2.3.5" "soundfile==0.14.0" )
+FLOOR=( "magenta-rt==2.0.3" "jax[cuda12]==0.11.1" "numpy==2.3.5" "soundfile==0.14.0" "mido==1.3.3" )
 # Latest line: same packages, unpinned, upgraded to the newest compatible build.
-LATEST=( "magenta-rt" "jax[cuda12]" "numpy" "soundfile" )
+LATEST=( "magenta-rt" "jax[cuda12]" "numpy" "soundfile" "mido" )
 
 install(){ "$UV" pip install --python "$PY" "$@"; }
 
@@ -36,7 +36,7 @@ verify(){
   "$PY" - <<'PY'
 import sys
 try:
-    import jax, numpy as np, soundfile  # noqa: F401
+    import jax, numpy as np, soundfile, mido  # noqa: F401
     from magenta_rt import MagentaRT2Jax
     from magenta_rt.config import MUSICCOCA
     if not jax.devices():
